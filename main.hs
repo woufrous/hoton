@@ -1,10 +1,17 @@
 import System.Random
+import System.Environment
 
 main :: IO ()
 main = do
-	gen <- getStdGen
-	let rs = take 10 $ randomRs (0,1) gen :: [Double]
-	mapM_ print (map cardano rs)
+	args <- getArgs
+	if length args /= 1
+	then do
+		return ()
+	else do
+		let numSamples = read $ head args :: Int
+		gen <- getStdGen
+		let rs = take numSamples $ randomRs (0,1) gen :: [Double]
+		mapM_ print (map cardano rs)
 
 cardano :: Double -> Double
 cardano r = u - (1/u)
