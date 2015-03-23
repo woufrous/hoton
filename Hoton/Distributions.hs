@@ -2,7 +2,8 @@ module Hoton.Distributions
 ( RandomDistribution (..),
   Rayleigh(..),
   HenyeyGreenstein(..),
-  ThicknessDistribution(..)
+  ThicknessDistribution(..),
+  LambertDistribution(..)
 ) where
 
 import System.Random
@@ -40,4 +41,10 @@ instance RandomDistribution ThicknessDistribution where
         where
             (r, g') = randomR (0,1) g
 
+data LambertDistribution = LambertDistribution
+instance RandomDistribution LambertDistribution where
+    drawRandom LambertDistribution g = (u, g')
+        where
+            (r, g') = randomR (0,1) g
+            u = sqrt r
 
