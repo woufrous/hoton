@@ -8,11 +8,12 @@ import System.Random
 
 class RandomDistribution rd where
     drawRandom :: RandomGen g => rd -> g -> (Double, g)
-    drawRandoms :: (RandomGen g, RandomDistribution rd, Integral n) => rd -> g -> n -> [Double]
-    drawRandoms _ _ 0 = []
-    drawRandoms rdf g n = x:drawRandoms rdf ng (n-1)
+    drawRandoms :: (RandomGen g, RandomDistribution rd, Integral n) => rd -> g -> n -> ([Double], g)
+    drawRandoms _ g 0 = ([], g)
+    drawRandoms rdf g n = (x:xs, ng')
         where
             (x, ng) = drawRandom rdf g
+            (xs, ng') = drawRandoms rdf ng (n-1)
 
 data Rayleigh = Rayleigh
 instance RandomDistribution Rayleigh where

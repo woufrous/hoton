@@ -12,6 +12,6 @@ main = do
     else do
         let numSamples = read $ head args :: Int
         gen <- getStdGen
-        let rs = take numSamples $ drawRandoms (HenyeyGreenstein 0.85) gen numSamples
+        let rs = take numSamples $ fst (drawRandoms (HenyeyGreenstein 0.85) gen numSamples)
         mapM_ print rs
 
