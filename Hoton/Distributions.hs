@@ -1,7 +1,8 @@
 module Hoton.Distributions
 ( RandomDistribution (..),
   Rayleigh(..),
-  HenyeyGreenstein(..)
+  HenyeyGreenstein(..),
+  ThicknessDistribution(..)
 ) where
 
 import System.Random
@@ -32,4 +33,11 @@ instance RandomDistribution HenyeyGreenstein where
             u = -v**2 + assym**2 + 1
             v = (1-assym**2)/w
             w = assym * (2*r - 1) + 1
+
+data ThicknessDistribution = ThicknessDistribution
+instance RandomDistribution ThicknessDistribution where
+    drawRandom ThicknessDistribution g = (- log (1 - r), g')
+        where
+            (r, g') = randomR (0,1) g
+
 
