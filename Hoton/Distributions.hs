@@ -11,7 +11,7 @@ class RandomDistribution rd where
     drawRandom :: RandomGen g => rd -> g -> (Double, g)
 
 data Rayleigh = Rayleigh
-instance RandomDistribution Rayleigh where  
+instance RandomDistribution Rayleigh where
     drawRandom Rayleigh g = ((u - (1/u)), g')
         where
             (r, g') = randomR (0,1) g
@@ -20,6 +20,6 @@ instance RandomDistribution Rayleigh where
             q = -8*r + 4
 
 data HenyeyGreenstein = HenyeyGreenstein Double
-instance RandomDistribution HenyeyGreenstein where  
+instance RandomDistribution HenyeyGreenstein where
     drawRandom (HenyeyGreenstein assym) g = (assym, g)
 
