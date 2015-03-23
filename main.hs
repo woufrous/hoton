@@ -1,6 +1,8 @@
 import System.Random
 import System.Environment
 
+import Hoton.Distributions
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -10,12 +12,6 @@ main = do
     else do
         let numSamples = read $ head args :: Int
         gen <- getStdGen
-        let rs = take numSamples $ randomRs (0,1) gen :: [Double]
-        mapM_ print (map cardano rs)
+        let rs = take numSamples $ drawRandoms (HenyeyGreenstein 0.85) gen numSamples
+        mapM_ print rs
 
-cardano :: Double -> Double
-cardano r = u - (1/u)
-    where
-        u = (-(q/2) + sqrt d)**(1/3 :: Double)
-        d = 1 + (q**2 / 4)
-        q = -8*r + 4
