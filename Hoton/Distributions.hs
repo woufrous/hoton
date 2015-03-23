@@ -17,14 +17,20 @@ class RandomDistribution rd where
             (x, ng) = drawRandom rdf g
             (xs, ng') = drawRandoms rdf ng (n-1)
 
+trans :: RandomGen g => (Double -> Double) -> g -> (Double, g)
+trans f g = (f r, g')
+    where
+        (r, g') = randomR (0,1) g
+
 data Rayleigh = Rayleigh
 instance RandomDistribution Rayleigh where
-    drawRandom Rayleigh g = ((u - (1/u)), g')
-        where
-            (r, g') = randomR (0,1) g
+    drawRandom Rayleigh = trans (\r -> let
             u = (-(q/2) + sqrt d)**(1/3 :: Double)
             d = 1 + (q**2 / 4)
             q = -8*r + 4
+            in
+            u - (1/u))
+
 
 data HenyeyGreenstein = HenyeyGreenstein Double
 instance RandomDistribution HenyeyGreenstein where
@@ -37,14 +43,9 @@ instance RandomDistribution HenyeyGreenstein where
 
 data ThicknessDistribution = ThicknessDistribution
 instance RandomDistribution ThicknessDistribution where
-    drawRandom ThicknessDistribution g = (- log (1 - r), g')
-        where
-            (r, g') = randomR (0,1) g
+    drawRandom ThicknessDistribution = trans (\r -> (- log (1 - r)))
 
 data LambertDistribution = LambertDistribution
 instance RandomDistribution LambertDistribution where
-    drawRandom LambertDistribution g = (u, g')
-        where
-            (r, g') = randomR (0,1) g
-            u = sqrt r
+    drawRandom LambertDistribution = trans sqrt
 
