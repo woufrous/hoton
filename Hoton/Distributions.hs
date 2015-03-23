@@ -9,7 +9,7 @@ module Hoton.Distributions
 import System.Random
 
 class RandomDistribution rd where
-    drawRandom :: RandomGen g => rd -> g -> (Double, g)
+    drawRandom  :: RandomGen g => rd -> g -> (Double, g)
     drawRandoms :: (RandomGen g, RandomDistribution rd, Integral n) => rd -> g -> n -> ([Double], g)
     drawRandoms _ g 0 = ([], g)
     drawRandoms rdf g n = (x:xs, ng')
