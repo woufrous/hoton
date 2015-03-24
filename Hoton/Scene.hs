@@ -10,13 +10,21 @@ module Hoton.Scene
     Box_(..),
     Face(..),
     Face_(..),
-    PhysicsBox(..),
-    BoundaryBox(..),
+    --PhysicsBox(..),
+    --BoundaryBox(..),
 ) where
 
 import Hoton.Types
+import Hoton.Vector
 
-data Photon = Photon deriving (Show)
+import System.Random
+
+data Photon = Photon {
+    tau_r :: Number,
+    pos :: Cartesian,
+    --dir :: Spherical
+    dir :: Cartesian
+} deriving (Show)
 
 class Show s => Source_ s
 
@@ -36,7 +44,7 @@ instance Show Face where
 data InteractionResult = IRPhoton Face Photon | IRSoS SourceOrSink deriving (Show)
 
 class Show b => Box_ b where
-    processPhoton :: b -> Photon -> [InteractionResult]
+    processPhoton :: (RandomGen g) => b -> Photon -> g -> [InteractionResult]
 
 data Box = forall b. Box_ b => Box b
 instance Box_ Box where
@@ -44,16 +52,16 @@ instance Box_ Box where
 instance Show Box where
     show (Box b) = show b
 
-data PhysicsBox = PhysicsBox {
-    height :: Number,
-    beta :: Number
-    } deriving (Show)
-instance Box_ PhysicsBox where
-    processPhoton b ph = []
+-- data PhysicsBox = PhysicsBox {
+--     height :: Number,
+--     beta :: Number
+--     } deriving (Show)
+-- instance Box_ PhysicsBox where
+--     processPhoton b ph = []
 
-data BoundaryBox = BoundaryBox {
-    radiance :: Number
-    } deriving (Show)
-instance Box_ BoundaryBox where
-    processPhoton b ph = []
+-- data BoundaryBox = BoundaryBox {
+--     radiance :: Number
+--     } deriving (Show)
+-- instance Box_ BoundaryBox where
+--     processPhoton b ph = []
 

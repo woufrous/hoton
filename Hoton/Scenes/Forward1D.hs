@@ -10,6 +10,7 @@ module Hoton.Scenes.Forward1D
 import Hoton.Types
 import Hoton.Scene
 import Hoton.Distributions
+import Hoton.Vector
 
 -- data Source1D = SourceTop | SourceBottom deriving (Show)
 -- instance Source_ Source1D
@@ -42,6 +43,15 @@ data PhysicsBox1D = PhysicsBox1D {
     scatterer :: RandomDistribution
     } deriving (Show)
 instance Box_ PhysicsBox1D where
-    processPhoton b ph = [IRPhoton (Face FaceTop) ph]
-
+    processPhoton b ph g
+        | z_scat < 0            = [IRPhoton (Face FaceBottom) ph]
+        | z_scat > (height b)   = [IRPhoton (Face FaceTop) ph]
+        | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
+        where
+            pos_scat = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
+            Cartesian _ _ z_scat = pos_scat
+            (tau_new, g')  = drawRandom ThicknessDistribution g
+            (mu_scat, g'') = drawRandom (scatterer b) g'
+            (phi_scat, g''') = drawRandom AzimutalDistribution g''
+            dir_scat = Cartesian 1.0 (acos mu_scat) phi_scat
 
