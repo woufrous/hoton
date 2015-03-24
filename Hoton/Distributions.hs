@@ -55,3 +55,7 @@ data LambertDistribution = LambertDistribution deriving (Show)
 instance RandomDistribution_ LambertDistribution where
     sample LambertDistribution = sqrt
 
+data AzimutalDistribution = AzimutalDistribution deriving (Show)
+instance RandomDistribution_ AzimutalDistribution where
+    sample AzimutalDistribution = (*(2*pi))
+
