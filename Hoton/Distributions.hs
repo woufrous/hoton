@@ -43,6 +43,7 @@ instance RandomDistribution_ Rayleigh where
 
 data HenyeyGreenstein = HenyeyGreenstein Double deriving (Show)
 instance RandomDistribution_ HenyeyGreenstein where
+    sample (HenyeyGreenstein   0.0) r = (2*r)-1
     sample (HenyeyGreenstein assym) r = u/(2*assym)
         where
             u = -v**2 + assym**2 + 1
