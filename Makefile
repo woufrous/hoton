@@ -1,4 +1,4 @@
-BIN		= hoton
+BIN		= hopr
 
 SRC		= main.hs
 SRC		+= Hoton/Distributions.hs
@@ -6,7 +6,7 @@ OBJ		= $(SRC:.hs=.o)
 
 all: $(BIN)
 
-hoton: $(SRC)
+hopr: $(SRC)
 	ghc -o $@ $^
 
 clean:
