@@ -2,7 +2,7 @@
 module Hoton.Scene
 () where
 
-type Number = Double
+import Hoton.Types
 
 data Photon = Photon deriving (Show)
 

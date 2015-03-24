@@ -1,7 +1,7 @@
 BIN		= hopr
 
 SRC		= main.hs
-SRC		+= Hoton/Distributions.hs
+SRC		+= Hoton/Types.hs Hoton/Distributions.hs
 OBJ		= $(SRC:.hs=.o)
 
 all: $(BIN)
