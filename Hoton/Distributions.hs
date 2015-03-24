@@ -1,3 +1,4 @@
+{-# LANGUAGE ExistentialQuantification #-}
 module Hoton.Distributions
 ( RandomDistribution (..),
   Rayleigh(..),
@@ -8,7 +9,7 @@ module Hoton.Distributions
 
 import System.Random
 
-class RandomDistribution rd where
+class Show rd => RandomDistribution_ rd where
     sample :: rd -> Double -> Double
     drawRandom  :: (RandomGen g) => rd -> g -> (Double, g)
     drawRandom rdf g = (sample rdf r, g')
@@ -21,8 +22,16 @@ class RandomDistribution rd where
             (x, ng) = drawRandom rdf g
             (xs, ng') = drawRandoms rdf ng (n-1)
 
-data Rayleigh = Rayleigh
-instance RandomDistribution Rayleigh where
+data RandomDistribution = forall rd. RandomDistribution_ rd => RandomDistribution rd
+instance RandomDistribution_ RandomDistribution where
+    sample (RandomDistribution rd) = sample rd
+    drawRandom (RandomDistribution rd) = drawRandom rd
+    drawRandoms (RandomDistribution rd) = drawRandoms rd
+instance Show RandomDistribution where
+    show (RandomDistribution rd) = show rd
+
+data Rayleigh = Rayleigh deriving (Show)
+instance RandomDistribution_ Rayleigh where
     sample Rayleigh r = u - (1/u)
         where
             u = (-(q/2) + sqrt d)**(1/3 :: Double)
@@ -30,19 +39,19 @@ instance RandomDistribution Rayleigh where
             q = -8*r + 4
 
 
-data HenyeyGreenstein = HenyeyGreenstein Double
-instance RandomDistribution HenyeyGreenstein where
+data HenyeyGreenstein = HenyeyGreenstein Double deriving (Show)
+instance RandomDistribution_ HenyeyGreenstein where
     sample (HenyeyGreenstein assym) r = u/(2*assym)
         where
             u = -v**2 + assym**2 + 1
             v = (1-assym**2)/w
             w = assym * (2*r - 1) + 1
 
-data ThicknessDistribution = ThicknessDistribution
-instance RandomDistribution ThicknessDistribution where
+data ThicknessDistribution = ThicknessDistribution deriving (Show)
+instance RandomDistribution_ ThicknessDistribution where
     sample ThicknessDistribution r = - log (1 - r)
 
-data LambertDistribution = LambertDistribution
-instance RandomDistribution LambertDistribution where
+data LambertDistribution = LambertDistribution deriving (Show)
+instance RandomDistribution_ LambertDistribution where
     sample LambertDistribution = sqrt
 
