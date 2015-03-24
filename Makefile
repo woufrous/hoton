@@ -6,7 +6,7 @@ OBJ		= $(SRC:.hs=.o)
 
 all: $(BIN)
 
-hopr: $(SRC)
+$(BIN): $(SRC)
 	ghc -o $@ $^
 
 clean:
