@@ -40,6 +40,10 @@ data InteractionResult faceType = IRPhoton faceType Photon | IRSoS SourceOrSink 
 
 class Box b where
     processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face b)], g)
+    processManyEqualPhotons :: (RandomGen g) => b -> Photon -> g -> [InteractionResult (Face b)]
+    processManyEqualPhotons b ph g = res' ++ processManyEqualPhotons b ph g'
+        where
+            (res', g') = processPhoton b ph g
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,
