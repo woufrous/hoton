@@ -61,5 +61,5 @@ instance Box PhysicsBox1D where
             dir_scat             = mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
 
 summarize1D :: [InteractionResult (Face PhysicsBox1D)] -> (Number, Number)
-summarize1D = foldl' (\(t,b) (IRPhoton x _) -> if x == FaceTop then (t+1,b) else (t,b+1)) (0,0)
+summarize1D = foldl (\(t,b) (IRPhoton x _) -> if x == FaceTop then (t+1,b) else (t,b+1)) (0,0)
 
