@@ -5,8 +5,9 @@ module Hoton.Scenes.Forward1D
 --    Source1D(..),
 --    BoundaryBox1D(..),
 --    ContainerBox1D(..),
-    PhysicsBox1D(..)
     Face(..),
+    PhysicsBox1D(..),
+    summarize1D
 ) where
 
 import Hoton.Types
@@ -58,4 +59,7 @@ instance Box PhysicsBox1D where
             (phi_scat, g''')     = drawRandom AzimutalDistribution g''
             dir_rot_mu           = mrotax phi_scat (dir ph) `mvmul` dir_helper
             dir_scat             = mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
+
+summarize1D :: [InteractionResult (Face PhysicsBox1D)] -> (Number, Number)
+summarize1D = foldl' (\(t,b) (IRPhoton x _) -> if x == FaceTop then (t+1,b) else (t,b+1)) (0,0)
 
