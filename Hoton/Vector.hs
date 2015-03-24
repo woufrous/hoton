@@ -4,7 +4,8 @@ module Hoton.Vector
     Cartesian (..),
     Spherical (..),
     toCartesian,
-    toSpherical
+    toSpherical,
+    anyPerpendicular,
 ) where
 
 import Hoton.Types
@@ -55,4 +56,7 @@ toSpherical (Cartesian x y z) = (Spherical r t p)
             | x==0          = (signum y) * (pi/2)
             | x<0 && y>=0   = atan (y/x) + pi
             | otherwise     = atan (y/x) - pi
+
+anyPerpendicular :: Cartesian -> Cartesian
+anyPerpendicular (Cartesian x1 x2 x3) = Cartesian 0 x3 (-x2)
 
