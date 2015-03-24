@@ -13,6 +13,7 @@ import Hoton.Types
 import Hoton.Scene
 import Hoton.Distributions
 import Hoton.Vector
+import Hoton.Matrix
 
 -- data Source1D = SourceTop | SourceBottom deriving (Show)
 -- instance Source_ Source1D
@@ -49,10 +50,12 @@ instance Box PhysicsBox1D where
         | z_scat > (height b)   = ([IRPhoton FaceTop ph], g)
         | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
         where
-            pos_scat = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
+            pos_scat             = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
             Cartesian _ _ z_scat = pos_scat
-            (tau_new, g')  = drawRandom ThicknessDistribution g
-            (mu_scat, g'') = drawRandom (scatterer b) g'
-            (phi_scat, g''') = drawRandom AzimutalDistribution g''
-            dir_scat = Cartesian 1.0 (acos mu_scat) phi_scat
+            dir_helper           = normalize $ anyPerpendicular $ dir ph
+            (tau_new, g')        = drawRandom ThicknessDistribution g
+            (mu_scat, g'')       = drawRandom (scatterer b) g'
+            (phi_scat, g''')     = drawRandom AzimutalDistribution g''
+            dir_rot_mu           = mrotax phi_scat (dir ph) `mvmul` dir_helper
+            dir_scat             = mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
 
