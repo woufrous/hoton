@@ -1,10 +1,12 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 module Hoton.Scenes.Forward1D
 (
 --    Source1D(..),
 --    BoundaryBox1D(..),
 --    ContainerBox1D(..),
-    Face1D(..),
     PhysicsBox1D(..)
+    Face(..),
 ) where
 
 import Hoton.Types
@@ -15,8 +17,6 @@ import Hoton.Vector
 -- data Source1D = SourceTop | SourceBottom deriving (Show)
 -- instance Source_ Source1D
 
-data Face1D = FaceTop | FaceBottom deriving (Show)
-instance Face_ Face1D
 
 -- data BoundaryBox1D = BoundaryBox1D {
 --     source :: Source1D
@@ -36,16 +36,17 @@ instance Face_ Face1D
 --    processPhoton (ContainerBox1D b1 b2) ph = results
 --        where
 --            results = (processPhoton b1 ph) ++ (processPhoton b2 ph)
+data instance Face PhysicsBox1D = FaceTop | FaceBottom deriving (Show,Eq)
 
 data PhysicsBox1D = PhysicsBox1D {
     height :: Number,
     beta :: Number,
     scatterer :: RandomDistribution
     } deriving (Show)
-instance Box_ PhysicsBox1D where
+instance Box PhysicsBox1D where
     processPhoton b ph g
-        | z_scat < 0            = [IRPhoton (Face FaceBottom) ph]
-        | z_scat > (height b)   = [IRPhoton (Face FaceTop) ph]
+        | z_scat < 0            = ([IRPhoton FaceBottom ph], g)
+        | z_scat > (height b)   = ([IRPhoton FaceTop ph], g)
         | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
         where
             pos_scat = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)

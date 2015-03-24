@@ -1,4 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Hoton.Scene
 (
     Photon(..),
@@ -7,9 +9,7 @@ module Hoton.Scene
     SourceOrSink(..),
     InteractionResult(..),
     Box(..),
-    Box_(..),
     Face(..),
-    Face_(..),
     --PhysicsBox(..),
     --BoundaryBox(..),
 ) where
@@ -22,7 +22,6 @@ import System.Random
 data Photon = Photon {
     tau_r :: Number,
     pos :: Cartesian,
-    --dir :: Spherical
     dir :: Cartesian
 } deriving (Show)
 
@@ -35,22 +34,12 @@ instance Show Source where
 
 data SourceOrSink = SoSSource Source | Sink Number deriving (Show)
 
-class Show f => Face_ f where
+data family Face boxType
 
-data Face = forall f. Face_ f => Face f
-instance Show Face where
-    show (Face f) = show f
+data InteractionResult faceType = IRPhoton faceType Photon | IRSoS SourceOrSink deriving (Show)
 
-data InteractionResult = IRPhoton Face Photon | IRSoS SourceOrSink deriving (Show)
-
-class Show b => Box_ b where
-    processPhoton :: (RandomGen g) => b -> Photon -> g -> [InteractionResult]
-
-data Box = forall b. Box_ b => Box b
-instance Box_ Box where
-    processPhoton (Box b) = processPhoton b
-instance Show Box where
-    show (Box b) = show b
+class Box b where
+    processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face b)], g)
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,
