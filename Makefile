@@ -1,11 +1,15 @@
 BIN		= hoton
 
+SRC		= main.hs
+SRC		+= Hoton/Distributions.hs
+OBJ		= $(SRC:.hs=.o)
+
 all: $(BIN)
 
-hoton: main.hs
-	ghc -o $@ --make $<
+hoton: $(SRC)
+	ghc -o $@ $^
 
 clean:
-	rm *.hi *.o $(BIN)
+	rm $(SRC:.hs=.hi) $(OBJ) $(BIN)
 
 .PHONY: all clean
