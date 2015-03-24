@@ -1,10 +1,12 @@
 {-# LANGUAGE ExistentialQuantification #-}
 module Hoton.Distributions
 ( RandomDistribution (..),
+  RandomDistribution_ (..),
   Rayleigh(..),
   HenyeyGreenstein(..),
   ThicknessDistribution(..),
-  LambertDistribution(..)
+  LambertDistribution(..),
+  AzimutalDistribution(..),
 ) where
 
 import System.Random
