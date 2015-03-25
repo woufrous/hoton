@@ -4,10 +4,13 @@ module Hoton.TestUtils
     shouldBeApprox,
     shouldBeApproxM,
     shouldBeApproxV,
+    DummyGen(..),
 ) where
 
 import Test.Hspec
 import Test.HUnit.Lang
+
+import System.Random
 
 import Hoton.Matrix
 import Hoton.Vector
@@ -31,3 +34,9 @@ a `shouldBeApproxV` b = maximum diffs `shouldSatisfy` (< 0.1^8)
         Cartesian a1 a2 a3 = a
         Cartesian b1 b2 b3 = b
         diffs = [(a1-b1),(a2-b2),(a3-b3)]
+
+data DummyGen = DummyGen
+instance RandomGen DummyGen where
+    next _  = (1, DummyGen)
+    split _ = (DummyGen, DummyGen)
+

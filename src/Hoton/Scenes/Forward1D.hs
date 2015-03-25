@@ -56,6 +56,14 @@ newDirection n mu phi = normalize $ mrotaxmu mu v' `mvmul` n
         v' = normalize $ mrotax phi (normalize n) `mvmul` v
         v  = anyPerpendicular n
 
+movePhotonZ :: Photon -> Number -> PhysicsBox1D -> Photon
+movePhotonZ ph len_z b = Photon { pos=(pos ph) `vadd` ((dir ph) `smul` len),
+                                  dir=(dir ph),
+                                  tau_r=(tau_r ph) - len * (beta b) }
+    where
+        Cartesian _ _ dir_z = (dir ph)
+        len                 = len_z / dir_z
+
 data PhysicsBox1D = PhysicsBox1D {
     height :: Number,
     beta :: Number,
@@ -63,16 +71,17 @@ data PhysicsBox1D = PhysicsBox1D {
     } deriving (Show)
 instance Box_ Box1D PhysicsBox1D where
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom ph], g)
-        | z_scat > (height b)   = ([IRPhoton FaceTop ph], g)
+        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph (0 -          z_start) b)], g)
+        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph ((height b) - z_start) b)], g)
         | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
         where
-            pos_scat             = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
-            Cartesian _ _ z_scat = pos_scat
-            (tau_new, g')        = drawRandom ThicknessDistribution g
-            (mu_scat, g'')       = drawRandom (scatterer b) g'
-            (phi_scat, g''')     = drawRandom AzimutalDistribution g''
-            dir_scat             = newDirection (dir ph) mu_scat phi_scat
+            Cartesian _ _ z_start = pos ph
+            pos_scat              = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
+            Cartesian _ _ z_scat  = pos_scat
+            (tau_new, g')         = drawRandom ThicknessDistribution g
+            (mu_scat, g'')        = drawRandom (scatterer b) g'
+            (phi_scat, g''')      = drawRandom AzimutalDistribution g''
+            dir_scat              = newDirection (dir ph) mu_scat phi_scat
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h b s

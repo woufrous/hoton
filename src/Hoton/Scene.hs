@@ -28,7 +28,7 @@ data Photon = Photon {
     tau_r :: Number,
     pos :: Cartesian,
     dir :: Cartesian
-} deriving (Show)
+} deriving (Show, Eq)
 
 class Show s => Source_ s
 
