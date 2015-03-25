@@ -53,12 +53,12 @@ instance Box PhysicsBox1D where
         where
             pos_scat             = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
             Cartesian _ _ z_scat = pos_scat
-            dir_helper           = normalize $ anyPerpendicular $ dir ph
+            dir_helper           = anyPerpendicular $ dir ph
             (tau_new, g')        = drawRandom ThicknessDistribution g
             (mu_scat, g'')       = drawRandom (scatterer b) g'
             (phi_scat, g''')     = drawRandom AzimutalDistribution g''
             dir_rot_mu           = mrotax phi_scat (dir ph) `mvmul` dir_helper
-            dir_scat             = mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
+            dir_scat             = normalize $ mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
 
 summarize1D :: [InteractionResult (Face PhysicsBox1D)] -> (Number, Number)
 summarize1D = foldl (\(t,b) (IRPhoton x _) -> if x == FaceTop then (t `seq` (t+1),b) else (t,b `seq` (b+1))) (0,0)
