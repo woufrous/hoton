@@ -8,7 +8,7 @@ HOTON_SRC   = $(patsubst %,src/%,$(_HOTON_SRC))
 OBJ			= $(HOTON_SRC:.hs=.o)
 
 GHC			= ghc
-GHC_FLAGS	= -isrc
+GHC_FLAGS	= -O2 -isrc
 
 all: $(BIN)
 
