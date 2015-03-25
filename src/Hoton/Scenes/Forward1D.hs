@@ -14,6 +14,8 @@ module Hoton.Scenes.Forward1D
     newDirection
 ) where
 
+import System.Random
+
 import Hoton.Types
 import Hoton.Scene
 import Hoton.Distributions
@@ -32,23 +34,56 @@ import Hoton.Matrix
 
 data Box1D = Box1D
 data instance Face Box1D = FaceTop | FaceBottom deriving (Show,Eq)
+otherFace FaceTop    = FaceBottom
+otherFace FaceBottom = FaceTop
+
+data instance Dimensions Box1D = Height Number
 
 --instance Box_ Box1D (Box Box1D)
 
 data ContainerBox1D = ContainerBox1D (Box Box1D) (Box Box1D) deriving (Show)
+cCenter (ContainerBox1D    _ bbot) = h
+    where
+        Height h = getDim bbot
+
+ex = Cartesian 0 0 1
+
+shiftPhoton innerFace leavesBox cbox ph
+    | innerFace == FaceTop && leavesBox     = ph
+    | innerFace == FaceTop && not leavesBox = Photon{dir=(dir ph), pos=((pos ph) `vadd` (ex `smul` (-c))), tau_r=(tau_r ph)}
+    | innerFace == FaceBottom               = Photon{dir=(dir ph), pos=((pos ph) `vadd` (ex `smul` c))   , tau_r=(tau_r ph)}
+    where
+        c = cCenter cbox
+
+cProcessInteractionResults :: (RandomGen g) => (Face Box1D) ->
+                                               (ContainerBox1D) ->
+                                               ([InteractionResult (Face Box1D)], g) ->
+                                               ([InteractionResult (Face Box1D)], g)
+cProcessInteractionResults _ _ ([], g) = ([], g)
+cProcessInteractionResults innerFace cbox ((IRPhoton f ph):rem, g)
+    | f == innerFace = cProcessInteractionResults (otherFace f) cbox $ processPhoton otherBox (shiftPhoton innerFace False cbox ph) g
+    | otherwise      = ((IRPhoton f $ shiftPhoton innerFace True cbox ph):remProcessed, g')
+    where
+        (remProcessed, g')   = cProcessInteractionResults innerFace cbox (rem, g)
+        ContainerBox1D b1 b2 = cbox
+        thisBox              = if innerFace == FaceTop then b2 else b1
+        otherBox             = if innerFace == FaceTop then b1 else b2
+
+cProcessInteractionResults innerFace cbox ((IRSoS sos):rem, g) = ((IRSoS sos):remProcessed, g')
+    where
+        (remProcessed, g') = cProcessInteractionResults innerFace cbox (rem, g)
+
 instance Box_ Box1D ContainerBox1D where
---   processTopResults :: ContainerBox1D -> [InteractionResult] -> [InteractionResult]
---   processTopResults (ContainerBox1D _ _) [] = []
---   processTopResults (ContainerBox1D b1 b2) ((IRSoS sos):rs) =
---       ((IRSoS sos):(processTopResults (ContainerBox1D b1 b2) rs))
---   processTopResults (ContainerBox1D b1 b2) ((IRPhoton (Face FaceTop) ph):rs) =
---       ((IRPhoton (Face FaceTop) ph):(processTopResults (ContainerBox1D b1 b2) rs))
---   processBottonResults :: ContainerBox1D -> [InteractionResult] -> [InteractionResult]
-    processPhoton (ContainerBox1D b1 b2) ph g = (results, g2)
+    getDim (ContainerBox1D btop bbot) = Height (h1+h2)
         where
-            (r1,g1) = processPhoton b1 ph g
-            (r2,g2) = processPhoton b1 ph g1
-            results = r1 ++ r2
+            Height h1 = getDim btop
+            Height h2 = getDim bbot
+    processPhoton c ph g
+        | z_start <= cCenter c    = cProcessInteractionResults FaceTop    c $ processPhoton bbot ph g
+        | otherwise               = cProcessInteractionResults FaceBottom c $ processPhoton btop (shiftPhoton FaceTop False c ph) g
+        where
+            ContainerBox1D btop bbot = c
+            Cartesian _ _ z_start = pos ph
 
 newDirection :: Cartesian -> Number -> Number -> Cartesian
 newDirection n mu phi = normalize $ mrotaxmu mu v' `mvmul` n
@@ -70,6 +105,7 @@ data PhysicsBox1D = PhysicsBox1D {
     scatterer :: RandomDistribution
     } deriving (Show)
 instance Box_ Box1D PhysicsBox1D where
+    getDim b = Height (height b)
     processPhoton b ph g
         | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph (0 -          z_start) b)], g)
         | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph ((height b) - z_start) b)], g)

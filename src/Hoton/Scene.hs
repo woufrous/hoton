@@ -14,6 +14,7 @@ module Hoton.Scene
     Box(..),
     Box_(..),
     Face(..),
+    Dimensions(..),
     --PhysicsBox(..),
     --BoundaryBox(..),
 ) where
@@ -40,6 +41,7 @@ instance Show Source where
 data SourceOrSink = SoSSource Source | Sink Number deriving (Show)
 
 data family Face boxType
+data family Dimensions boxType
 
 data InteractionResult faceType = IRPhoton faceType Photon | IRSoS SourceOrSink deriving (Show)
 
@@ -56,9 +58,11 @@ class Show b => Box_ bFamily b where
             (res', g')       = processPhoton b ph g
             (tau_r_new, g'') = drawRandom ThicknessDistribution g'
             ph_new           = Photon tau_r_new (pos ph) (dir ph)
+    getDim :: b -> (Dimensions bFamily)
 
 instance Box_ bFamily (Box bFamily) where
     processPhoton (Box _ b) ph g = processPhoton b ph g
+    getDim (Box _ b) = getDim b
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,
