@@ -14,7 +14,7 @@ module Hoton.Matrix
 import Hoton.Types
 import Hoton.Vector
 
-data Matrix3D = Matrix3D Cartesian Cartesian Cartesian deriving (Show)
+data Matrix3D = Matrix3D Cartesian Cartesian Cartesian deriving (Show, Eq)
 
 mgen :: ((Number, Number, Number), (Number, Number, Number), (Number, Number, Number)) -> Matrix3D
 mgen ((x11, x12, x13), (x21, x22, x23), (x31, x32, x33)) =
