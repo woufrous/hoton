@@ -20,6 +20,7 @@ module Hoton.Scene
 
 import Hoton.Types
 import Hoton.Vector
+import Hoton.Distributions
 
 import System.Random
 
@@ -50,9 +51,11 @@ instance Show (Box bFamily) where
 class Show b => Box_ bFamily b where
     processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face bFamily)], g)
     processManyEqualPhotons :: (RandomGen g) => b -> Photon -> g -> [InteractionResult (Face bFamily)]
-    processManyEqualPhotons b ph g = res' ++ processManyEqualPhotons b ph g'
+    processManyEqualPhotons b ph g = res' ++ processManyEqualPhotons b ph_new  g''
         where
-            (res', g') = processPhoton b ph g
+            (res', g')       = processPhoton b ph g
+            (tau_r_new, g'') = drawRandom ThicknessDistribution g'
+            ph_new           = Photon tau_r_new (pos ph) (dir ph)
 
 instance Box_ bFamily (Box bFamily) where
     processPhoton (Box _ b) ph g = processPhoton b ph g
