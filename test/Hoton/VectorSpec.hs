@@ -4,13 +4,10 @@ import Test.Hspec
 import Test.QuickCheck
 import Control.Exception (evaluate)
 
+import Hoton.TestUtils
+
 import Hoton.Types
 import Hoton.Vector
-
--- p: Number of decimal places
--- s: Should-Value
--- i: Is-Value
-approx p s i = abs (s-i) < 0.1^p
 
 spec :: Spec
 spec = do
