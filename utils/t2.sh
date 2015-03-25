@@ -9,6 +9,6 @@ do
 	do
 		echo "tau=$tau, sza=$sza"
 		fn="./$g-$sza-$tau.log"
-		./hopr_t2 $g $tau $sza $1 > $fn &
+		../hopr t2 $g $tau $sza $1 > $fn &
 	done
 done
