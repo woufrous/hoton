@@ -52,8 +52,8 @@ t2 params = do
             nphotons = read $ params !! 3
 --        let top = BoundaryBox1D SourceTop
 --        let bottom = BoundaryBox1D SourceBottom
-        let physics = PhysicsBox1D 1.0 tau $ RandomDistribution (HenyeyGreenstein g)
 --        let c = ContainerBox1D (Box (ContainerBox1D (Box top) (Box physics))) (Box bottom)
+        let physics = physicsBox1D 1.0 tau $ RandomDistribution (HenyeyGreenstein g)
         print physics
         let
             pos0 = Cartesian 0.0 0.0 1.0

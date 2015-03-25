@@ -1,6 +1,9 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE TypeFamilies #-}
-
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Hoton.Scene
 (
     Photon(..),
@@ -9,6 +12,7 @@ module Hoton.Scene
     SourceOrSink(..),
     InteractionResult(..),
     Box(..),
+    Box_(..),
     Face(..),
     --PhysicsBox(..),
     --BoundaryBox(..),
@@ -38,12 +42,20 @@ data family Face boxType
 
 data InteractionResult faceType = IRPhoton faceType Photon | IRSoS SourceOrSink deriving (Show)
 
-class Box b where
-    processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face b)], g)
-    processManyEqualPhotons :: (RandomGen g) => b -> Photon -> g -> [InteractionResult (Face b)]
+data Box bFamily = forall b. Box_ bFamily b => Box bFamily b
+
+instance Show (Box bFamily) where
+    show (Box _ b) = show b
+
+class Show b => Box_ bFamily b where
+    processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face bFamily)], g)
+    processManyEqualPhotons :: (RandomGen g) => b -> Photon -> g -> [InteractionResult (Face bFamily)]
     processManyEqualPhotons b ph g = res' ++ processManyEqualPhotons b ph g'
         where
             (res', g') = processPhoton b ph g
+
+instance Box_ bFamily (Box bFamily) where
+    processPhoton (Box _ b) ph g = processPhoton b ph g
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,
