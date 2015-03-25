@@ -18,9 +18,7 @@ spec = do
             Cartesian 1 0 0 `scalar` Cartesian 0 1 0 `shouldBe` (0 :: Number)
             Cartesian 1 1 1 `scalar` Cartesian 0.5 (-1) 0.5 `shouldBe` (0 :: Number)
         it "returns 1 for parallel unit vectors" $ do
-            approx 8 1 (Cartesian (sqrt 0.5) 0 (sqrt 0.5)
-                        `scalar`
-                        Cartesian (sqrt 0.5) 0 (sqrt 0.5)) `shouldBe` True
+            (Cartesian (sqrt 0.5) 0 (sqrt 0.5) `scalar` Cartesian (sqrt 0.5) 0 (sqrt 0.5)) `shouldBeApprox` 1
     describe "Hoton.Vector.smul" $ do
         it "returns double of the vector" $ do
             Cartesian 1 3 (-4) `smul` 2 `shouldBe` Cartesian 2 6 (-8)
@@ -34,10 +32,10 @@ spec = do
             Cartesian 1 (-2) 7 `vadd` Cartesian 3 5 (-2) `shouldBe` Cartesian 4 3 5
     describe "Hoton.Vector.norm" $ do
         it "returns 1 for unit vectors" $ do
-            approx 8 1 (norm (Cartesian 1 0 0)) `shouldBe` True
+            norm (Cartesian 1 0 0) `shouldBeApprox` 1
     describe "Hoton.Vector.normalize" $ do
         it "returns unit vector for any non-zero vector" $ do
-            mapM_ ((`shouldBe` True) . (approx 8 1 . norm . normalize . t2cart))
+            mapM_ ((`shouldBeApprox` 1) . norm . normalize . t2cart)
                 [(1,2,3), (0,1,4), (-1,5,6), (9,0,4), (-3,2,-7)]
         it "throws DivideByZero for zero vector" $ do
             evaluate (normalize (Cartesian 0 0 0)) `shouldThrow` (==DivideByZero)

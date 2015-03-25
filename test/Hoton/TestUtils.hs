@@ -1,10 +1,12 @@
 module Hoton.TestUtils
 (
-    approx
+    approx,
+    shouldBeApprox
 ) where
 
--- p: Number of decimal places
+import Test.Hspec
+
 -- s: Should-Value
 -- i: Is-Value
-approx p s i = abs (s-i) < 0.1^p
-
+approx s i = abs (s-i) < 0.1^8
+a `shouldBeApprox` b = a `shouldSatisfy` approx b
