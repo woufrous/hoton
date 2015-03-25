@@ -1,7 +1,7 @@
 BIN			= hopr
 
 _HOTON_SRC	= Hoton/Types.hs Hoton/Distributions.hs Hoton/Vector.hs
-_HOTON_SRC	+= Hoton/Scene.hs Hoton/Scenes/Forward1D.hs
+_HOTON_SRC	+= Hoton/Scene.hs Hoton/Scenes/Forward1D.hs Hoton/Matrix.hs
 _HOTON_SRC	+= main.hs
 HOTON_SRC   = $(patsubst %,src/%,$(_HOTON_SRC))
 OBJ			= $(HOTON_SRC:.hs=.o)
