@@ -9,6 +9,7 @@ module Hoton.Vector
 ) where
 
 import Hoton.Types
+import Control.Exception
 
 class Vector3D v where
     scalar :: v -> v -> Number
@@ -19,7 +20,7 @@ class Vector3D v where
     vadd :: v -> v -> v
     norm :: v -> Number
 
-data Cartesian = Cartesian Number Number Number deriving (Show)
+data Cartesian = Cartesian Number Number Number deriving (Show, Eq)
 instance Vector3D Cartesian where
     scalar (Cartesian x1 y1 z1) (Cartesian x2 y2 z2) = x1*x2 + y1*y2 + z1*z2
     cross (Cartesian x1 y1 z1) (Cartesian x2 y2 z2) = (Cartesian x3 y3 z3)
@@ -28,6 +29,7 @@ instance Vector3D Cartesian where
             y3 = (z1*x2)-(z2*x1)
             z3 = (x1*y2)-(x2*y1)
     norm v = sqrt $ scalar v v
+    _ `sdiv` 0 = throw DivideByZero
     (Cartesian x y z) `sdiv` n = (Cartesian (x/n) (y/n) (z/n))
     (Cartesian x y z) `smul` n = (Cartesian (x*n) (y*n) (z*n))
     (Cartesian x1 y1 z1) `vadd` (Cartesian x2 y2 z2) = (Cartesian (x1+x2) (y1+y2) (z1+z2))
