@@ -6,7 +6,8 @@ import Hoton.Distributions
 import Hoton.Vector
 
 import System.Environment
-import System.Random
+--import System.Random
+import System.Random.Mersenne.Pure64
 
 import Text.Printf
 
@@ -17,7 +18,8 @@ main = do
     then do
         print "args must be: g tau sza nphotons"
     else do
-        gen <- getStdGen
+--        gen <- getStdGen
+        gen <- newPureMT
         let [g, tau, sza] = map read $ take 3 args :: [Number]
             nphotons = read $ args !! 3
 --        let top = BoundaryBox1D SourceTop
