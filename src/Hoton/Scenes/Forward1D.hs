@@ -72,6 +72,8 @@ instance Box_ Box1D PhysicsBox1D where
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h b s
 
-summarize1D :: [InteractionResult (Face Box1D)] -> (Number, Number)
-summarize1D = foldl (\(t,b) (IRPhoton x _) -> if x == FaceTop then (t `seq` (t+1),b) else (t,b `seq` (b+1))) (0,0)
+accIR (t,b) (IRPhoton FaceTop    _) = (t+1,b)
+accIR (t,b) (IRPhoton FaceBottom _) = (t,b+1)
 
+summarize1D :: [InteractionResult (Face Box1D)] -> (Number, Number)
+summarize1D = foldl accIR (0,0)
