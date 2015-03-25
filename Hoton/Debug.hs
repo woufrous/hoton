@@ -1,3 +1,10 @@
+module Hoton.Debug
+( _traceShowId,
+  _breakIfVectorIsNan
+) where
+
+import Hoton.Vector
+
 import Debug.Trace
 
 _traceShowId a = traceShow a a
