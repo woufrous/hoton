@@ -10,7 +10,8 @@ module Hoton.Scenes.Forward1D
     containerBox1D,
     Face(..),
     physicsBox1D,
-    summarize1D
+    summarize1D,
+    newDirection
 ) where
 
 import Hoton.Types
@@ -49,6 +50,12 @@ instance Box_ Box1D ContainerBox1D where
             (r2,g2) = processPhoton b1 ph g1
             results = r1 ++ r2
 
+newDirection :: Cartesian -> Number -> Number -> Cartesian
+newDirection n mu phi = normalize $ mrotaxmu mu v' `mvmul` n
+    where
+        v' = normalize $ mrotax phi (normalize n) `mvmul` v
+        v  = anyPerpendicular n
+
 data PhysicsBox1D = PhysicsBox1D {
     height :: Number,
     beta :: Number,
@@ -62,12 +69,10 @@ instance Box_ Box1D PhysicsBox1D where
         where
             pos_scat             = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
             Cartesian _ _ z_scat = pos_scat
-            dir_helper           = anyPerpendicular $ dir ph
             (tau_new, g')        = drawRandom ThicknessDistribution g
             (mu_scat, g'')       = drawRandom (scatterer b) g'
             (phi_scat, g''')     = drawRandom AzimutalDistribution g''
-            dir_rot_mu           = mrotax phi_scat (dir ph) `mvmul` dir_helper
-            dir_scat             = normalize $ mrotaxmu mu_scat dir_rot_mu `mvmul` (dir ph)
+            dir_scat             = newDirection (dir ph) mu_scat phi_scat
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h b s

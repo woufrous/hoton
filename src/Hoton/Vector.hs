@@ -60,5 +60,6 @@ toSpherical (Cartesian x y z) = (Spherical r t p)
             | otherwise     = atan (y/x) - pi
 
 anyPerpendicular :: Cartesian -> Cartesian
-anyPerpendicular (Cartesian x1 x2 x3) = Cartesian 0 x3 (-x2)
+anyPerpendicular (Cartesian x1 0  0) = Cartesian 0 1 0
+anyPerpendicular (Cartesian _ x2 x3) = Cartesian 0 x3 (-x2)
 
