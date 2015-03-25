@@ -19,4 +19,7 @@ hopr_t2: src/hopr_t2.hs $(HOTON_SRC)
 clean:
 	rm *.hi *.o $(HOTON_SRC:.hs=.hi) $(OBJ) $(BIN) hopr_t2
 
-.PHONY: all clean
+test:
+	runhaskell -isrc -itest test/Spec.hs
+
+.PHONY: all clean test
