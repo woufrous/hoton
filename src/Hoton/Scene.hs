@@ -59,19 +59,19 @@ instance Show (Box bFamily) where
     show (Box _ b) = show b
 
 class Show b => Box_ bFamily b where
-    processPhoton :: (RandomGen g) => b -> Photon -> g -> ([InteractionResult (Face bFamily)], g)
-    processManyEqualPhotons :: (RandomGen g) => b -> Photon -> g -> [InteractionResult (Face bFamily)]
-    processManyEqualPhotons b ph g = res' ++ processManyEqualPhotons b ph_new  g''
+    processPhoton :: b -> Photon -> [Number] -> ([InteractionResult (Face bFamily)], [Number])
+    processManyEqualPhotons :: b -> Photon -> [Number] -> [InteractionResult (Face bFamily)]
+    processManyEqualPhotons b ph r = res' ++ processManyEqualPhotons b ph_new  r''
         where
-            (res', g')       = processPhoton b ph g
-            (tau_r_new, g'') = drawRandom ThicknessDistribution g'
+            (res', r')       = processPhoton b ph r
+            (tau_r_new, r'') = drawRandom ThicknessDistribution r'
             ph_new           = Photon tau_r_new (pos ph) (dir ph)
     getDim :: b -> (Dimensions bFamily)
     addBox :: b -> (Box bFamily) -> (Box bFamily)
     boxLevel :: b -> (BoxLevel bFamily)
 
 instance Box_ bFamily (Box bFamily) where
-    processPhoton (Box _ b) ph g = processPhoton b ph g
+    processPhoton (Box _ b) ph r = processPhoton b ph r
     getDim        (Box _ b)      = getDim b
     addBox        (Box _ b) b2   = addBox b b2
     boxLevel      (Box _ b)      = boxLevel b

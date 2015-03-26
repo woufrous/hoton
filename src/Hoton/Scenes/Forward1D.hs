@@ -61,10 +61,10 @@ shiftPhoton innerFace leavesBox cbox ph
     where
         c = cCenter cbox
 
-cProcessInteractionResults :: (RandomGen g) => (Face Box1D) ->
-                                               (ContainerBox1D) ->
-                                               ([InteractionResult (Face Box1D)], g) ->
-                                               ([InteractionResult (Face Box1D)], g)
+cProcessInteractionResults :: (Face Box1D) ->
+                              (ContainerBox1D) ->
+                              ([InteractionResult (Face Box1D)], [Number]) ->
+                              ([InteractionResult (Face Box1D)], [Number])
 -- easy: no photons -> no processing
 cProcessInteractionResults _ _ ([], g) = ([], g)
 -- easy as well: soruces or sinks are not processed

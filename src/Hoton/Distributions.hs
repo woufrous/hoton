@@ -10,14 +10,13 @@ module Hoton.Distributions
 ) where
 
 import System.Random
+import Hoton.Types
 
 class Show rd => RandomDistribution_ rd where
-    sample :: rd -> Double -> Double
-    drawRandom  :: (RandomGen g) => rd -> g -> (Double, g)
-    drawRandom rdf g = (sample rdf r, g')
-        where
-            (r, g') = randomR (0,1) g
-    drawRandoms :: (RandomGen g, Integral n) => rd -> g -> n -> ([Double], g)
+    sample :: rd -> Number -> Number
+    drawRandom  :: rd -> [Number] -> (Number, [Number])
+    drawRandom rdf (r:r') = (sample rdf r, r')
+    drawRandoms :: Integral n => rd -> [Number] -> n -> ([Double], [Number])
     drawRandoms _ g 0 = ([], g)
     drawRandoms rdf g n = (x:xs, ng')
         where

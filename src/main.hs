@@ -1,5 +1,6 @@
-import System.Random
-import System.Random.Mersenne.Pure64
+--import System.Random
+import System.Random.Mersenne
+--import System.Random.Mersenne.Pure64
 import System.Environment
 import Text.Printf
 
@@ -36,8 +37,10 @@ t1 params = do
         return ()
     else do
         let numSamples = read $ head params :: Int
-        gen <- getStdGen
-        let rs = take numSamples $ fst (drawRandoms (HenyeyGreenstein 0.85) gen numSamples)
+--        gen <- getStdGen
+        gen <- newMTGen Nothing
+        randomNumbers <- randoms gen
+        let rs = take numSamples $ fst (drawRandoms (HenyeyGreenstein 0.85) randomNumbers numSamples)
         mapM_ print rs
 
 t2 :: [String] -> IO ()
@@ -49,7 +52,9 @@ t2 params = do
         return ()
     else do
 --        gen <- getStdGen
-        gen <- newPureMT
+--        gen <- newPureMT
+        gen <- newMTGen Nothing
+        randomNumbers <- randoms gen
         let [g, tau, sza] = map read $ take 3 params :: [Number]
             nphotons = read $ params !! 3
 --        let top = BoundaryBox1D SourceTop
@@ -60,7 +65,7 @@ t2 params = do
         let
             pos0 = Cartesian 0.0 0.0 1.0
             dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
-            (tau0, g') = drawRandom ThicknessDistribution gen
+            (tau0, g') = drawRandom ThicknessDistribution randomNumbers
         printf "SZA=%.0f, DIR=%s\n" sza $ show dir0
         let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons physics (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
         let r' = t/(fromIntegral nphotons)
@@ -81,11 +86,13 @@ t3 params = do
         atmos <- readAtmos fn
         let Just atmosphere = rayleighAtmos2Box atmos
         let Height h = getDim atmosphere
-        gen <- newPureMT
+--        gen <- newPureMT
+        gen <- newMTGen Nothing
+        randomNumbers <- randoms gen
         let
             pos0 = Cartesian 0.0 0.0 h
             dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
-            (tau0, g') = drawRandom ThicknessDistribution gen
+            (tau0, g') = drawRandom ThicknessDistribution randomNumbers
         let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
         let r' = t/(fromIntegral nphotons)
         let t' = b/(fromIntegral nphotons)
