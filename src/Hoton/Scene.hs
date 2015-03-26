@@ -30,9 +30,9 @@ import Hoton.Distributions
 import System.Random
 
 data Photon = Photon {
-    tau_r :: Number,
-    pos :: Cartesian,
-    dir :: Cartesian
+    tau_r :: !Number,
+    pos :: !Cartesian,
+    dir :: !Cartesian
 } deriving (Show, Eq)
 
 posScat :: Photon -> Number -> Cartesian

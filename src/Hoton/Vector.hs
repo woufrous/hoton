@@ -20,7 +20,7 @@ class Vector3D v where
     vadd :: v -> v -> v
     norm :: v -> Number
 
-data Cartesian = Cartesian Number Number Number deriving (Show, Eq)
+data Cartesian = Cartesian !Number !Number !Number deriving (Show, Eq)
 instance Vector3D Cartesian where
     scalar (Cartesian x1 y1 z1) (Cartesian x2 y2 z2) = x1*x2 + y1*y2 + z1*z2
     cross (Cartesian x1 y1 z1) (Cartesian x2 y2 z2) = (Cartesian x3 y3 z3)
