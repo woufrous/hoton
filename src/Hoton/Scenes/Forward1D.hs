@@ -52,6 +52,7 @@ cCenter (ContainerBox1D    _ bbot) = h
 
 ex = Cartesian 0 0 1
 
+-- changing between boxes involves coordinate system transformations
 shiftPhoton innerFace leavesBox cbox ph
     | innerFace == FaceTop && leavesBox     = ph
     | innerFace == FaceTop && not leavesBox = Photon{dir=(dir ph), pos=((pos ph) `vadd` (ex `smul` (-c))), tau_r=(tau_r ph)}
@@ -63,19 +64,28 @@ cProcessInteractionResults :: (RandomGen g) => (Face Box1D) ->
                                                (ContainerBox1D) ->
                                                ([InteractionResult (Face Box1D)], g) ->
                                                ([InteractionResult (Face Box1D)], g)
+-- easy: no photons -> no processing
 cProcessInteractionResults _ _ ([], g) = ([], g)
-cProcessInteractionResults innerFace cbox ((IRPhoton f ph):rem, g)
-    | f == innerFace = cProcessInteractionResults (otherFace f) cbox $ processPhoton otherBox (shiftPhoton innerFace False cbox ph) g
-    | otherwise      = ((IRPhoton f $ shiftPhoton innerFace True cbox ph):remProcessed, g')
-    where
-        (remProcessed, g')   = cProcessInteractionResults innerFace cbox (rem, g)
-        ContainerBox1D b1 b2 = cbox
-        thisBox              = if innerFace == FaceTop then b2 else b1
-        otherBox             = if innerFace == FaceTop then b1 else b2
-
+-- easy as well: soruces or sinks are not processed
 cProcessInteractionResults innerFace cbox ((IRSoS sos):rem, g) = ((IRSoS sos):remProcessed, g')
     where
         (remProcessed, g') = cProcessInteractionResults innerFace cbox (rem, g)
+-- actual photons must be either exchanged or propagated further out of the box
+cProcessInteractionResults innerFace cbox ((IRPhoton f ph):rem, g)
+    | leavesBox = ((IRPhoton f ph'):remProcessedL, gL)
+    | otherwise = (remProcessedS ++ remProcessedS', gS')
+    where
+        leavesBox             = f /= innerFace
+        ph'                   = shiftPhoton innerFace leavesBox cbox ph
+        -- leaves Box:
+        (remProcessedL, gL)   = cProcessInteractionResults innerFace cbox (rem, g)
+        -- stays in Box:
+        (remProcessedS , gS ) = cProcessInteractionResults (otherFace f) cbox $ processPhoton otherBox ph' g
+        (remProcessedS', gS') = cProcessInteractionResults innerFace cbox (rem, gS)
+        -- helpers
+        ContainerBox1D b1 b2  = cbox
+        thisBox               = if innerFace == FaceTop then b2 else b1
+        otherBox              = if innerFace == FaceTop then b1 else b2
 
 instance Box_ Box1D ContainerBox1D where
     getDim (ContainerBox1D btop bbot) = Height (h1+h2)
