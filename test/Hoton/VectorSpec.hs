@@ -39,5 +39,10 @@ spec = do
                 [(1,2,3), (0,1,4), (-1,5,6), (9,0,4), (-3,2,-7)]
         it "throws DivideByZero for zero vector" $ do
             evaluate (normalize (Cartesian 0 0 0)) `shouldThrow` (==DivideByZero)
-
-
+    describe "Hoton.Vector.toCartesian" $ do
+        it "resturns (0 0 1) for theta=0, phi=0" $ do
+            toCartesian (Spherical 1 0 0) `shouldBeApproxV` (Cartesian 0 0 1)
+        it "resturns normalized (1 0 1) for theta=pi/4, phi=0" $ do
+            toCartesian (Spherical 1 (pi/4) 0) `shouldBeApproxV` normalize (Cartesian 1 0 1)
+        it "resturns normalized (1 1 (sqrt2)) for theta=pi/4, phi=pi/4" $ do
+            toCartesian (Spherical 1 (pi/4) (pi/4)) `shouldBeApproxV` normalize (Cartesian 1 1 (sqrt 2))
