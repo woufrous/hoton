@@ -13,10 +13,12 @@ spec = do
     describe "Hoton.Distributions.RandomDistribution_" $ do
         it "should call sample when drawRandom is Called" $ do
             let (res1, g1') = drawRandom TestDistribution (DummyGen1 0)
-            res1 `shouldBe` 0
+            res1 `shouldSatisfy` (>=0)
+            res1 `shouldSatisfy` (<=1)
             g1'  `shouldBe` (DummyGen1 0)
             let (res2, g2') = drawRandom TestDistribution (DummyGen1 maxBound)
-            res2 `shouldBeApprox` 1
+            res2 `shouldSatisfy` (>=0)
+            res2 `shouldSatisfy` (<=1)
             g2'  `shouldBe` (DummyGen1 maxBound)
     describe "Hoton.Distributions.Rayleigh" $ do
         it "evalues some examples correct" $ do
