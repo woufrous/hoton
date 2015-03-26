@@ -11,7 +11,9 @@ module Hoton.Scenes.Forward1D
     Face(..),
     physicsBox1D,
     summarize1D,
-    newDirection
+    newDirection,
+    rayleighAtmos2Box,
+    Dimensions(..)
 ) where
 
 import System.Random
@@ -37,7 +39,9 @@ data instance Face Box1D = FaceTop | FaceBottom deriving (Show,Eq)
 otherFace FaceTop    = FaceBottom
 otherFace FaceBottom = FaceTop
 
-data instance Dimensions Box1D = Height Number
+data instance Dimensions Box1D = Height Number deriving (Show)
+data instance BoxLevel   Box1D = BoxLevel1D Int deriving (Show)
+
 
 --instance Box_ Box1D (Box Box1D)
 
@@ -78,6 +82,18 @@ instance Box_ Box1D ContainerBox1D where
         where
             Height h1 = getDim btop
             Height h2 = getDim bbot
+    addBox b other
+        | l2 < l1   = containerBox1D b1 $ containerBox1D b2 other
+        | otherwise = containerBox1D ((Box Box1D) b) other
+        where
+            ContainerBox1D b1 b2 = b
+            BoxLevel1D l1        = boxLevel b1
+            BoxLevel1D l2        = boxLevel b2
+    boxLevel b = BoxLevel1D $ max l1 l2
+        where
+            ContainerBox1D b1 b2 = b
+            BoxLevel1D l1        = boxLevel b1
+            BoxLevel1D l2        = boxLevel b2
     processPhoton c ph g
         | z_start <= cCenter c    = cProcessInteractionResults FaceTop    c $ processPhoton bbot ph g
         | otherwise               = cProcessInteractionResults FaceBottom c $ processPhoton btop (shiftPhoton FaceTop False c ph) g
@@ -105,7 +121,9 @@ data PhysicsBox1D = PhysicsBox1D {
     scatterer :: RandomDistribution
     } deriving (Show)
 instance Box_ Box1D PhysicsBox1D where
-    getDim b = Height (height b)
+    getDim b   = Height (height b)
+    addBox b   = containerBox1D ((Box Box1D) b)
+    boxLevel b = BoxLevel1D 0
     processPhoton b ph g
         | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph (0 -          z_start) b)], g)
         | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph ((height b) - z_start) b)], g)
@@ -127,3 +145,17 @@ accIR (t,b) (IRPhoton FaceBottom _) = (t,b+1)
 
 summarize1D :: [InteractionResult (Face Box1D)] -> (Number, Number)
 summarize1D = foldl accIR (0,0)
+
+
+rayleighAtmos2BoxList :: [(Double,Double,Double)] -> [(Box Box1D)]
+rayleighAtmos2BoxList [a]       = []
+rayleighAtmos2BoxList (a:b:res) = (physicsBox1D (zhigh-zlow) beta_sca (RandomDistribution Rayleigh)):rayleighAtmos2BoxList (b:res)
+    where
+        (zlow, beta_sca, _) = a
+        (zhigh,       _, _) = b
+
+rayleighAtmos2Box' :: [(Box Box1D)] -> Maybe (Box Box1D)
+rayleighAtmos2Box' [] = Nothing
+rayleighAtmos2Box' l  = Just $ foldl1 addBox l
+
+rayleighAtmos2Box = rayleighAtmos2Box' . rayleighAtmos2BoxList

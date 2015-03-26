@@ -4,6 +4,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
+
 module Hoton.Scene
 (
     Photon(..),
@@ -15,6 +17,7 @@ module Hoton.Scene
     Box_(..),
     Face(..),
     Dimensions(..),
+    BoxLevel(..),
     --PhysicsBox(..),
     --BoundaryBox(..),
 ) where
@@ -42,6 +45,7 @@ data SourceOrSink = SoSSource Source | Sink Number deriving (Show)
 
 data family Face boxType
 data family Dimensions boxType
+data family BoxLevel boxType
 
 data InteractionResult faceType = IRPhoton faceType Photon | IRSoS SourceOrSink deriving (Show)
 
@@ -59,10 +63,14 @@ class Show b => Box_ bFamily b where
             (tau_r_new, g'') = drawRandom ThicknessDistribution g'
             ph_new           = Photon tau_r_new (pos ph) (dir ph)
     getDim :: b -> (Dimensions bFamily)
+    addBox :: b -> (Box bFamily) -> (Box bFamily)
+    boxLevel :: b -> (BoxLevel bFamily)
 
 instance Box_ bFamily (Box bFamily) where
     processPhoton (Box _ b) ph g = processPhoton b ph g
-    getDim (Box _ b) = getDim b
+    getDim        (Box _ b)      = getDim b
+    addBox        (Box _ b) b2   = addBox b b2
+    boxLevel      (Box _ b)      = boxLevel b
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,
