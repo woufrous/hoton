@@ -9,6 +9,7 @@
 module Hoton.Scene
 (
     Photon(..),
+    posScat,
     Source(..),
     Source_(..),
     SourceOrSink(..),
@@ -33,6 +34,9 @@ data Photon = Photon {
     pos :: Cartesian,
     dir :: Cartesian
 } deriving (Show, Eq)
+
+posScat :: Photon -> Number -> Cartesian
+posScat ph beta = ((dir ph) `smul` ((tau_r ph)/beta)) `vadd` (pos ph)
 
 class Show s => Source_ s
 

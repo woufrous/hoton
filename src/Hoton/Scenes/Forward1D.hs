@@ -24,6 +24,7 @@ import Hoton.Distributions
 import Hoton.Vector
 import Hoton.Matrix
 
+
 -- data Source1D = SourceTop | SourceBottom deriving (Show)
 -- instance Source_ Source1D
 
@@ -121,7 +122,7 @@ newDirection n mu phi = normalize $ mrotaxmu mu v' `mvmul` n
 movePhotonZ :: Photon -> Number -> PhysicsBox1D -> Photon
 movePhotonZ ph len_z b = Photon { pos=(pos ph) `vadd` ((dir ph) `smul` len),
                                   dir=(dir ph),
-                                  tau_r=(tau_r ph) - len * (beta b) }
+                                  tau_r=(tau_r ph) - (len * (beta b)) }
     where
         Cartesian _ _ dir_z = (dir ph)
         len                 = len_z / dir_z
@@ -136,13 +137,15 @@ instance Box_ Box1D PhysicsBox1D where
     addBox b other  = containerBox1D other ((Box Box1D) b)
     boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph (0 -          z_start) b)], g)
-        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph ((height b) - z_start) b)], g)
+        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph dz_to_bottom b)], g)
+        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph dz_to_top    b)], g)
         | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
         where
             Cartesian _ _ z_start = pos ph
-            pos_scat              = ((dir ph) `smul` ((tau_r ph)/(beta b))) `vadd` (pos ph)
+            pos_scat              = posScat ph $ beta b
             Cartesian _ _ z_scat  = pos_scat
+            dz_to_bottom          = 0 -          z_start
+            dz_to_top             = (height b) - z_start
             (tau_new, g')         = drawRandom ThicknessDistribution g
             (mu_scat, g'')        = drawRandom (scatterer b) g'
             (phi_scat, g''')      = drawRandom AzimutalDistribution g''
