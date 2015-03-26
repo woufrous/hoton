@@ -13,9 +13,13 @@ module Hoton.Matrix
 
 import Hoton.Types
 import Hoton.Vector
+import Text.Printf
 
-data Matrix3D = Matrix3D Cartesian Cartesian Cartesian deriving (Show, Eq)
-
+data Matrix3D = Matrix3D Cartesian Cartesian Cartesian deriving (Eq)
+instance Show Matrix3D where
+    show (Matrix3D (Cartesian x11 x12 x13) (Cartesian x21 x22 x23) (Cartesian x31 x32 x33)) = formatted
+        where
+        formatted = printf "[[%6.3f %6.3f %6.3f]\n [%6.3f %6.3f %6.3f]\n [%6.3f %6.3f %6.3f]]" x11 x12 x13 x21 x22 x23 x31 x32 x33
 mgen :: ((Number, Number, Number), (Number, Number, Number), (Number, Number, Number)) -> Matrix3D
 mgen ((x11, x12, x13), (x21, x22, x23), (x31, x32, x33)) =
     Matrix3D (Cartesian x11 x12 x13) (Cartesian x21 x22 x23) (Cartesian x31 x32 x33)
