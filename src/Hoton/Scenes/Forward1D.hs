@@ -122,9 +122,9 @@ data PhysicsBox1D = PhysicsBox1D {
     scatterer :: RandomDistribution
     } deriving (Show)
 instance Box_ Box1D PhysicsBox1D where
-    getDim b   = Height (height b)
-    addBox b   = containerBox1D ((Box Box1D) b)
-    boxLevel b = BoxLevel1D 0
+    getDim b        = Height (height b)
+    addBox b other  = containerBox1D other ((Box Box1D) b)
+    boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
         | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph (0 -          z_start) b)], g)
         | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph ((height b) - z_start) b)], g)
