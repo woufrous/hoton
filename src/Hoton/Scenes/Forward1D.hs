@@ -82,13 +82,14 @@ instance Box_ Box1D ContainerBox1D where
         where
             Height h1 = getDim btop
             Height h2 = getDim bbot
+    -- adds bot on TOP
     addBox b other
-        | l2 < l1   = containerBox1D b1 $ containerBox1D b2 other
-        | otherwise = containerBox1D ((Box Box1D) b) other
+        | ltop < lbot   = containerBox1D (containerBox1D other btop) bbot
+        | otherwise = containerBox1D other ((Box Box1D) b)
         where
-            ContainerBox1D b1 b2 = b
-            BoxLevel1D l1        = boxLevel b1
-            BoxLevel1D l2        = boxLevel b2
+            ContainerBox1D btop bbot = b
+            BoxLevel1D ltop          = boxLevel btop
+            BoxLevel1D lbot          = boxLevel bbot
     boxLevel b = BoxLevel1D $ max l1 l2
         where
             ContainerBox1D b1 b2 = b
