@@ -8,6 +8,7 @@ import Hoton.Vector
 import Hoton.Types
 import Hoton.Scene
 import Hoton.Scenes.Forward1D
+import Hoton.IO
 
 main :: IO ()
 main = do
@@ -24,6 +25,7 @@ main = do
 dispatch :: String -> ([String] -> IO ())
 dispatch "t1"   = t1
 dispatch "t2"   = t2
+dispatch "t3"   = t3
 
 t1 :: [String] -> IO ()
 t1 params = do
@@ -60,6 +62,30 @@ t2 params = do
             dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
             (tau0, g') = drawRandom ThicknessDistribution gen
         let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons physics (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
+        let r' = t/(fromIntegral nphotons)
+        let t' = b/(fromIntegral nphotons)
+        printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f\n" t b r' t'
+
+t3 :: [String] -> IO ()
+t3 params = do
+    if length params /= 3
+    then do
+        exe <- getProgName
+        putStrLn $ exe ++ " fn sza nphotons"
+        return ()
+    else do
+        let fn:params' = params
+        let sza        = read $ head params' :: Number
+            nphotons   = read $ params' !! 1 :: Int
+        atmos <- readAtmos fn
+        let Just atmosphere = rayleighAtmos2Box atmos
+        let Height h = getDim atmosphere
+        gen <- newPureMT
+        let
+            pos0 = Cartesian 0.0 0.0 h
+            dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
+            (tau0, g') = drawRandom ThicknessDistribution gen
+        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
         let r' = t/(fromIntegral nphotons)
         let t' = b/(fromIntegral nphotons)
         printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f\n" t b r' t'
