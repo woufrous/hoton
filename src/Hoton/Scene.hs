@@ -64,7 +64,7 @@ movePhotonZ :: Photon -> Scatterer -> Number -> Number -> Photon
 movePhotonZ ph sc betaAbsTot len_z = Photon { pos=(pos ph) `vadd` ((dir ph) `smul` len),
                                               dir=(dir ph),
                                               tau_r=(tau_r ph) - (len * (betaScat sc)),
-                                              tau_abs=(betaAbsTot * abs(len_z))+(tau_abs ph) }
+                                              tau_abs=(betaAbsTot * abs(len))+(tau_abs ph) }
     where
         Cartesian _ _ dir_z = (dir ph)
         len                 = len_z / dir_z
