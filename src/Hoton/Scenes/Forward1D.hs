@@ -15,7 +15,7 @@ module Hoton.Scenes.Forward1D
     Dimensions(..)
 ) where
 
-import System.Random
+import Data.List
 
 import Hoton.Types
 import Hoton.Scene
@@ -113,28 +113,36 @@ instance Box_ Box1D ContainerBox1D where
             ContainerBox1D btop bbot = c
             Cartesian _ _ z_start = pos ph
 
+div0 0 _ = 0
+div0 a b = a/b
+
 data PhysicsBox1D = PhysicsBox1D {
     height :: Number,
     scatterers :: [Scatterer]
     } deriving (Show)
 betaAbsTotal :: PhysicsBox1D -> Number
-betaAbsTotal b = sum $ map betaAbs $ scatterers b
+betaAbsTotal     b = sum $ map betaAbs $ scatterers b
+betaScatTotal    b = sum $ map betaScat $ scatterers b
+betaScatRelCum   b = (scanl1 (+) $ map ((`div0` (betaScatTotal b)) . betaScat) $ scatterers b)
 instance Box_ Box1D PhysicsBox1D where
     getDim b        = Height (height b)
     addBox b other  = containerBox1D other ((Box Box1D) b)
     boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph sc (betaAbsTotal b) dz_to_bottom)], g)
-        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph sc (betaAbsTotal b) dz_to_top   )], g)
+        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph sc (betaAbsTotal b) dz_to_bottom)], g')
+        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph sc (betaAbsTotal b) dz_to_top   )], g')
         | otherwise             = processPhoton b scPh g'
         where
-            sc                    = head $ scatterers b
+            (rChoose:g')          = g
+            Just (_,sc)           = if (betaScatTotal b) == 0
+                                    then Just (1, head $ scatterers b)
+                                    else find ((> rChoose) . fst) $ zip (betaScatRelCum b) (scatterers b)
             Cartesian _ _ z_start = pos ph
             pos_scat              = posScat ph sc
             Cartesian _ _ z_scat  = pos_scat
             dz_to_bottom          = 0 -          z_start
             dz_to_top             = (height b) - z_start
-            (scPh, g')            = scatteredPhoton ph sc (betaAbsTotal b) g
+            (scPh, g'')           = scatteredPhoton ph sc (betaAbsTotal b) g'
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h [Scatterer 0.0 b s]
