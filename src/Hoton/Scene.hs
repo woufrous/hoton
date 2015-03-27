@@ -10,6 +10,7 @@ module Hoton.Scene
 (
     Photon(..),
     initializePhoton,
+    initializePhotonWithTau,
     Scatterer(..),
     movePhotonZ,
     posScat,
@@ -47,6 +48,9 @@ initializePhoton :: Cartesian -> Cartesian -> [Number] -> (Photon, [Number])
 initializePhoton pos0 dir0 g = (Photon tau0 pos0 dir0 0, g')
     where
         (tau0, g') = drawRandom ThicknessDistribution g
+
+initializePhotonWithTau :: Number -> Cartesian -> Cartesian -> Photon
+initializePhotonWithTau tau0 pos0 dir0 = Photon tau0 pos0 dir0 0
 
 posScat :: Photon -> Scatterer -> Cartesian
 posScat ph sc = ((dir ph) `smul` (remainingS ph sc))  `vadd` (pos ph)

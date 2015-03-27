@@ -136,7 +136,7 @@ instance Box_ Box1D PhysicsBox1D where
             (rChoose:g')          = g
             Just (_,sc)           = if (betaScatTotal b) == 0
                                     then Just (1, head $ scatterers b)
-                                    else find ((> rChoose) . fst) $ zip (betaScatRelCum b) (scatterers b)
+                                    else find ((>= rChoose) . fst) $ zip (betaScatRelCum b) (scatterers b)
             Cartesian _ _ z_start = pos ph
             pos_scat              = posScat ph sc
             Cartesian _ _ z_scat  = pos_scat
