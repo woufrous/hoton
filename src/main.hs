@@ -97,7 +97,7 @@ t3 params = do
                 (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere ph0 g'
             let r' = t/(fromIntegral nphotons)
             let t' = b/(fromIntegral nphotons)
-            printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f ABS=%.f\n" t b r' t' (1-r'-t')
+            printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f ABS=%.6f\n" t b r' t' (1-r'-t')
             return (r', t')
         let angles = [0,5..85]
         res <- mapM (getTR gen) angles
