@@ -77,24 +77,30 @@ t3 params = do
     if length params /= 3
     then do
         exe <- getProgName
-        putStrLn $ exe ++ " fn sza nphotons"
+        putStrLn $ exe ++ " fn nphotons outFn"
         return ()
     else do
-        let fn:params' = params
-        let sza        = read $ head params' :: Number
-            nphotons   = read $ params' !! 1 :: Int
+        let fn         = params !! 0
+            nphotons   = read $ params !! 1 :: Int
+            outFn      = params !! 2 :: String
         atmos <- readAtmos fn
         let Just atmosphere = rayleighAtmos2Box atmos
         let Height h = getDim atmosphere
 --        gen <- newPureMT
         gen <- newMTGen Nothing
-        randomNumbers <- randoms gen
-        let
-            pos0 = Cartesian 0.0 0.0 h
-            dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
-            (ph0, g') = initializePhoton pos0 dir0 randomNumbers
-        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere ph0 g'
-        let r' = t/(fromIntegral nphotons)
-        let t' = b/(fromIntegral nphotons)
-        printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f\n" t b r' t'
+        let getTR gen sza = do
+            randomNumbers <- randoms gen
+            let
+                pos0 = Cartesian 0.0 0.0 h
+                dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
+                (ph0, g') = initializePhoton pos0 dir0 randomNumbers
+                (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere ph0 g'
+            let r' = t/(fromIntegral nphotons)
+            let t' = b/(fromIntegral nphotons)
+            printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f ABS=%.f\n" t b r' t' (1-r'-t')
+            return (r', t')
+        let angles = [0,5..85]
+        res <- mapM (getTR gen) angles
+        writeFile outFn $ unlines $ zipWith (\sza (r, t) -> printf "%.1f %.6f %.6f" sza r t) angles res
+        print "DONE"
 

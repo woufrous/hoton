@@ -23,6 +23,7 @@ import Hoton.Distributions
 import Hoton.Vector
 import Hoton.Matrix
 
+import Hoton.Debug
 
 -- data Source1D = SourceTop | SourceBottom deriving (Show)
 -- instance Source_ Source1D
@@ -123,8 +124,8 @@ instance Box_ Box1D PhysicsBox1D where
     addBox b other  = containerBox1D other ((Box Box1D) b)
     boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph sc dz_to_bottom)], g)
-        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph sc dz_to_top   )], g)
+        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph sc (betaAbsTotal b) dz_to_bottom)], g)
+        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph sc (betaAbsTotal b) dz_to_top   )], g)
         | otherwise             = processPhoton b scPh g'
         where
             sc                    = head $ scatterers b
@@ -133,13 +134,13 @@ instance Box_ Box1D PhysicsBox1D where
             Cartesian _ _ z_scat  = pos_scat
             dz_to_bottom          = 0 -          z_start
             dz_to_top             = (height b) - z_start
-            (scPh, g')            = scatteredPhoton ph sc g
+            (scPh, g')            = scatteredPhoton ph sc (betaAbsTotal b) g
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h [Scatterer 0.0 b s]
 
-accIR (t,b) (IRPhoton FaceTop    _) = (t+1,b)
-accIR (t,b) (IRPhoton FaceBottom _) = (t,b+1)
+accIR (t,b) (IRPhoton FaceTop    (Photon _ _ _ tau_abs)) = (t+exp(-tau_abs),b)
+accIR (t,b) (IRPhoton FaceBottom (Photon _ _ _ tau_abs)) = (t,b+exp(-tau_abs))
 
 summarize1D :: [InteractionResult (Face Box1D)] -> (Number, Number)
 summarize1D = foldl accIR (0,0)
@@ -147,13 +148,13 @@ summarize1D = foldl accIR (0,0)
 
 rayleighAtmos2BoxList :: [(Double,Double,Double)] -> [(Box Box1D)]
 rayleighAtmos2BoxList [a]       = []
-rayleighAtmos2BoxList (a:b:res) = (physicsBox1D (zhigh-zlow) beta_sca (RandomDistribution Rayleigh)):rayleighAtmos2BoxList (b:res)
+rayleighAtmos2BoxList (a:b:res) = (Box Box1D (PhysicsBox1D (zhigh-zlow) [Scatterer beta_abs beta_sca (RandomDistribution Rayleigh)])):rayleighAtmos2BoxList (b:res)
     where
-        (zlow, beta_sca, _) = a
-        (zhigh,       _, _) = b
+        (zlow, beta_sca, beta_abs) = a
+        (zhigh,       _,        _) = b
 
 rayleighAtmos2Box' :: [(Box Box1D)] -> Maybe (Box Box1D)
 rayleighAtmos2Box' [] = Nothing
 rayleighAtmos2Box' l  = Just $ foldl1 addBox l
 
-rayleighAtmos2Box = rayleighAtmos2Box' . rayleighAtmos2BoxList
+rayleighAtmos2Box d = rayleighAtmos2Box' $ rayleighAtmos2BoxList d

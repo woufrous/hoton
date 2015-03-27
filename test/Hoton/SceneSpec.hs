@@ -15,7 +15,7 @@ spec :: Spec
 spec = do
     describe "Hoton.Scene.posScat" $ do
         it "returns the scattering position of a given photon" $ do
-            let ph = Photon{pos=Cartesian 0 0 1,dir=Cartesian 0 1 0,tau_r=5, weight=1}
+            let ph = Photon{pos=Cartesian 0 0 1,dir=Cartesian 0 1 0,tau_r=5, tau_abs=0}
             posScat ph (Scatterer 0 1 $ RandomDistribution Rayleigh) `shouldBeApproxV` Cartesian 0 5 1
             posScat ph (Scatterer 0 2 $ RandomDistribution Rayleigh) `shouldBeApproxV` Cartesian 0 2.5 1
     describe "Hoton.Scene.newDirection" $ do
