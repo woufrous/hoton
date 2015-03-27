@@ -65,9 +65,9 @@ t2 params = do
         let
             pos0 = Cartesian 0.0 0.0 1.0
             dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
-            (tau0, g') = drawRandom ThicknessDistribution randomNumbers
+            (ph0, g') = initializePhoton pos0 dir0 randomNumbers
         printf "SZA=%.0f, DIR=%s\n" sza $ show dir0
-        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons physics (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
+        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons physics ph0 g'
         let r' = t/(fromIntegral nphotons)
         let t' = b/(fromIntegral nphotons)
         printf "TOP=%.0f BOTTOM=%.0f T=%f R=%f\n" t b t' r'
@@ -92,8 +92,8 @@ t3 params = do
         let
             pos0 = Cartesian 0.0 0.0 h
             dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
-            (tau0, g') = drawRandom ThicknessDistribution randomNumbers
-        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere (Photon {pos=pos0,dir=dir0,tau_r=tau0}) g'
+            (ph0, g') = initializePhoton pos0 dir0 randomNumbers
+        let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere ph0 g'
         let r' = t/(fromIntegral nphotons)
         let t' = b/(fromIntegral nphotons)
         printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f\n" t b r' t'

@@ -11,7 +11,6 @@ module Hoton.Scenes.Forward1D
     Face(..),
     physicsBox1D,
     summarize1D,
-    newDirection,
     rayleighAtmos2Box,
     Dimensions(..)
 ) where
@@ -56,8 +55,8 @@ ex = Cartesian 0 0 1
 -- changing between boxes involves coordinate system transformations
 shiftPhoton innerFace leavesBox cbox ph
     | innerFace == FaceTop && leavesBox     = ph
-    | innerFace == FaceTop && not leavesBox = Photon{dir=(dir ph), pos=((pos ph) `vadd` (ex `smul` (-c))), tau_r=(tau_r ph)}
-    | innerFace == FaceBottom               = Photon{dir=(dir ph), pos=((pos ph) `vadd` (ex `smul` c))   , tau_r=(tau_r ph)}
+    | innerFace == FaceTop && not leavesBox = movePhotonV ph $ ex `smul` (-c)
+    | innerFace == FaceBottom               = movePhotonV ph $ ex `smul` c
     where
         c = cCenter cbox
 
@@ -113,46 +112,31 @@ instance Box_ Box1D ContainerBox1D where
             ContainerBox1D btop bbot = c
             Cartesian _ _ z_start = pos ph
 
-newDirection :: Cartesian -> Number -> Number -> Cartesian
-newDirection n mu phi = normalize $ mrotaxmu mu v' `mvmul` n
-    where
-        v' = normalize $ mrotax phi (normalize n) `mvmul` v
-        v  = anyPerpendicular n
-
-movePhotonZ :: Photon -> Number -> PhysicsBox1D -> Photon
-movePhotonZ ph len_z b = Photon { pos=(pos ph) `vadd` ((dir ph) `smul` len),
-                                  dir=(dir ph),
-                                  tau_r=(tau_r ph) - (len * (beta b)) }
-    where
-        Cartesian _ _ dir_z = (dir ph)
-        len                 = len_z / dir_z
-
 data PhysicsBox1D = PhysicsBox1D {
     height :: Number,
-    beta :: Number,
-    scatterer :: RandomDistribution
+    scatterers :: [Scatterer]
     } deriving (Show)
+betaAbsTotal :: PhysicsBox1D -> Number
+betaAbsTotal b = sum $ map betaAbs $ scatterers b
 instance Box_ Box1D PhysicsBox1D where
     getDim b        = Height (height b)
     addBox b other  = containerBox1D other ((Box Box1D) b)
     boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph dz_to_bottom b)], g)
-        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph dz_to_top    b)], g)
-        | otherwise             = processPhoton b (Photon{pos=pos_scat,dir=dir_scat,tau_r=tau_new}) g'''
+        | z_scat < 0            = ([IRPhoton FaceBottom (movePhotonZ ph sc dz_to_bottom)], g)
+        | z_scat > (height b)   = ([IRPhoton FaceTop    (movePhotonZ ph sc dz_to_top   )], g)
+        | otherwise             = processPhoton b scPh g'
         where
+            sc                    = head $ scatterers b
             Cartesian _ _ z_start = pos ph
-            pos_scat              = posScat ph $ beta b
+            pos_scat              = posScat ph sc
             Cartesian _ _ z_scat  = pos_scat
             dz_to_bottom          = 0 -          z_start
             dz_to_top             = (height b) - z_start
-            (tau_new, g')         = drawRandom ThicknessDistribution g
-            (mu_scat, g'')        = drawRandom (scatterer b) g'
-            (phi_scat, g''')      = drawRandom AzimutalDistribution g''
-            dir_scat              = newDirection (dir ph) mu_scat phi_scat
+            (scPh, g')            = scatteredPhoton ph sc g
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
-physicsBox1D h b s = Box Box1D $ PhysicsBox1D h b s
+physicsBox1D h b s = Box Box1D $ PhysicsBox1D h [Scatterer 0.0 b s]
 
 accIR (t,b) (IRPhoton FaceTop    _) = (t+1,b)
 accIR (t,b) (IRPhoton FaceBottom _) = (t,b+1)
