@@ -23,13 +23,13 @@ main = do
         let (action:params) = args
         in dispatch action params
 
-dispatch :: String -> ([String] -> IO ())
+dispatch :: String -> [String] -> IO ()
 dispatch "t1"   = t1
 dispatch "t2"   = t2
 dispatch "t3"   = t3
 
 t1 :: [String] -> IO ()
-t1 params = do
+t1 params =
     if length params /= 1
     then do
         exe <- getProgName
@@ -44,7 +44,7 @@ t1 params = do
         mapM_ print rs
 
 t2 :: [String] -> IO ()
-t2 params = do
+t2 params =
     if length params /= 4
     then do
         exe <- getProgName
@@ -68,19 +68,19 @@ t2 params = do
             (ph0, g') = initializePhoton pos0 dir0 randomNumbers
         printf "SZA=%.0f, DIR=%s\n" sza $ show dir0
         let (t,b) = summarize1D . take nphotons $ processManyEqualPhotons physics ph0 g'
-        let r' = t/(fromIntegral nphotons)
-        let t' = b/(fromIntegral nphotons)
+        let r' = t / fromIntegral nphotons
+        let t' = b / fromIntegral nphotons
         printf "TOP=%.0f BOTTOM=%.0f T=%f R=%f\n" t b t' r'
 
 t3 :: [String] -> IO ()
-t3 params = do
+t3 params =
     if length params /= 3
     then do
         exe <- getProgName
         putStrLn $ exe ++ " fn nphotons outFn"
         return ()
     else do
-        let fn         = params !! 0
+        let fn         = head params
             nphotons   = read $ params !! 1 :: Int
             outFn      = params !! 2 :: String
         atmos <- readAtmos fn
@@ -95,12 +95,12 @@ t3 params = do
                 dir0 = toCartesian $ Spherical 1.0 ((sza*pi/180)+pi) 0.0
                 (ph0, g') = initializePhoton pos0 dir0 randomNumbers
                 (t,b) = summarize1D . take nphotons $ processManyEqualPhotons atmosphere ph0 g'
-            let r' = t/(fromIntegral nphotons)
-            let t' = b/(fromIntegral nphotons)
+            let r' = t / fromIntegral nphotons
+            let t' = b / fromIntegral nphotons
             printf "TOP=%.0f BOTTOM=%.0f R=%f T=%f ABS=%.6f\n" t b r' t' (1-r'-t')
             return (r', t')
         let angles = [0,5..85]
         res <- mapM (getTR gen) angles
-        writeFile outFn $ unlines $ zipWith (\sza (r, t) -> printf "%.1f %.6f %.6f" sza r t) angles res
+        writeFile outFn . unlines $ zipWith (\sza (r, t) -> printf "%.1f %.6f %.6f" sza r t) angles res
         print "DONE"
 

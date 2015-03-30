@@ -4,7 +4,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 module Hoton.Scene
 (
@@ -40,31 +39,31 @@ import Hoton.Distributions
 import System.Random
 
 data Photon = Photon {
-    tau_r           :: !Number,
-    pos             :: !Cartesian,
-    dir             :: !Cartesian,
-    tau_abs         :: !Number
+    tauR   :: !Number,
+    pos    :: !Cartesian,
+    dir    :: !Cartesian,
+    tauAbs :: !Number
 }
 
 remainingS :: Photon -> Scatterer -> Number
-remainingS ph sc = (tau_r ph)/(betaScat sc)
+remainingS ph sc = tauR ph / betaScat sc
 
 photonWeight :: Photon -> Number
-photonWeight ph  = exp(-(tau_abs ph))
+photonWeight ph  = exp(-(tauAbs ph))
 
 posScat :: Photon -> Scatterer -> Cartesian
-posScat ph sc    = ((dir ph) `smul` (remainingS ph sc))  `vadd` (pos ph)
+posScat ph sc    = (dir ph `smul` remainingS ph sc)  `vadd` pos ph
 
 movePhotonV :: Photon -> Cartesian -> Photon
-movePhotonV ph v = ph{pos=(pos ph) `vadd` v}
+movePhotonV ph v = ph{pos = pos ph `vadd` v}
 travelPhotonZ :: Photon -> Scatterer -> Number -> Number -> Photon
 travelPhotonZ ph sc betaAbsTot len_z = ph'
         where
-            Cartesian _ _ dir_z = (dir ph)
+            Cartesian _ _ dir_z = dir ph
             len                 = len_z / dir_z
-            ph' = ph {pos=(pos ph) `vadd` ((dir ph) `smul` len),
-                      tau_r=(tau_r ph) - (len * (betaScat sc)),
-                      tau_abs=(betaAbsTot * abs(len))+(tau_abs ph) }
+            ph' = ph {pos    = pos ph `vadd` (dir ph `smul` len),
+                      tauR   = tauR ph - (len * betaScat sc),
+                      tauAbs = (betaAbsTot * abs len) + tauAbs ph}
 
 instance Show Photon where
     show ph = "Photon"
@@ -88,11 +87,11 @@ scatteredPhoton ph sc betaAbsTot g = (ph', g''')
             (mu_scat, g'')   = drawRandom (phaseDistribution sc) g'
             (phi_scat, g''') = drawRandom AzimutalDistribution g''
             dir_scat         = newDirection (dir ph) mu_scat phi_scat
-            tau_abs'         = (betaAbsTot * (remainingS ph sc))+(tau_abs ph)
+            tauAbs'          = (betaAbsTot * remainingS ph sc) + tauAbs ph
             ph'              = ph{pos=pos_scat,
                                   dir=dir_scat,
-                                  tau_r=tau_new,
-                                  tau_abs=tau_abs'}
+                                  tauR=tau_new,
+                                  tauAbs=tauAbs'}
 
 data Scatterer = Scatterer {
     betaAbs  :: Number,
@@ -134,16 +133,16 @@ class Show b => Box_ bFamily b where
         where
             (res', r')     = processPhoton b ph r
             (tau_new, r'') = drawRandom ThicknessDistribution r'
-            ph_new         = ph{tau_r=tau_new}
-    getDim :: b -> (Dimensions bFamily)
-    addBox :: b -> (Box bFamily) -> (Box bFamily)
-    boxLevel :: b -> (BoxLevel bFamily)
+            ph_new         = ph{tauR=tau_new}
+    getDim :: b -> Dimensions bFamily
+    addBox :: b -> Box bFamily -> Box bFamily
+    boxLevel :: b -> BoxLevel bFamily
 
 instance Box_ bFamily (Box bFamily) where
-    processPhoton (Box _ b) ph r = processPhoton b ph r
-    getDim        (Box _ b)      = getDim b
-    addBox        (Box _ b) b2   = addBox b b2
-    boxLevel      (Box _ b)      = boxLevel b
+    processPhoton (Box _ b) = processPhoton b
+    getDim        (Box _ b) = getDim b
+    addBox        (Box _ b) = addBox b
+    boxLevel      (Box _ b) = boxLevel b
 
 -- data PhysicsBox = PhysicsBox {
 --     height :: Number,

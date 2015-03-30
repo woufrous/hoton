@@ -61,19 +61,19 @@ shiftPhoton innerFace leavesBox cbox ph
     where
         c = cCenter cbox
 
-cProcessInteractionResults :: (Face Box1D) ->
-                              (ContainerBox1D) ->
+cProcessInteractionResults :: Face Box1D ->
+                              ContainerBox1D ->
                               ([InteractionResult (Face Box1D)], [Number]) ->
                               ([InteractionResult (Face Box1D)], [Number])
 -- easy: no photons -> no processing
 cProcessInteractionResults _ _ ([], g) = ([], g)
 -- easy as well: soruces or sinks are not processed
-cProcessInteractionResults innerFace cbox ((IRSoS sos):rem, g) = ((IRSoS sos):remProcessed, g')
+cProcessInteractionResults innerFace cbox (IRSoS sos:rem, g) = (IRSoS sos:remProcessed, g')
     where
         (remProcessed, g') = cProcessInteractionResults innerFace cbox (rem, g)
 -- actual photons must be either exchanged or propagated further out of the box
-cProcessInteractionResults innerFace cbox ((IRPhoton f ph):rem, g)
-    | leavesBox = ((IRPhoton f ph'):remProcessedL, gL)
+cProcessInteractionResults innerFace cbox (IRPhoton f ph:rem, g)
+    | leavesBox = (IRPhoton f ph':remProcessedL, gL)
     | otherwise = (remProcessedS ++ remProcessedS', gS')
     where
         leavesBox             = f /= innerFace
@@ -96,7 +96,7 @@ instance Box_ Box1D ContainerBox1D where
     -- adds bot on TOP
     addBox b other
         | ltop < lbot   = containerBox1D (containerBox1D other btop) bbot
-        | otherwise = containerBox1D other ((Box Box1D) b)
+        | otherwise = containerBox1D other (Box Box1D b)
         where
             ContainerBox1D btop bbot = b
             BoxLevel1D ltop          = boxLevel btop
@@ -121,47 +121,47 @@ data PhysicsBox1D = PhysicsBox1D {
     scatterers :: [Scatterer]
     } deriving (Show)
 betaAbsTotal :: PhysicsBox1D -> Number
-betaAbsTotal     b = sum $ map betaAbs $ scatterers b
-betaScatTotal    b = sum $ map betaScat $ scatterers b
-betaScatRelCum   b = (scanl1 (+) $ map ((`div0` (betaScatTotal b)) . betaScat) $ scatterers b)
+betaAbsTotal     b = sum . map betaAbs $ scatterers b
+betaScatTotal    b = sum . map betaScat $ scatterers b
+betaScatRelCum   b = scanl1 (+) . map ((`div0` betaScatTotal b) . betaScat) $ scatterers b
 instance Box_ Box1D PhysicsBox1D where
     getDim b        = Height (height b)
-    addBox b other  = containerBox1D other ((Box Box1D) b)
+    addBox b other  = containerBox1D other (Box Box1D b)
     boxLevel b      = BoxLevel1D 0
     processPhoton b ph g
-        | z_scat < 0            = ([IRPhoton FaceBottom (travelPhotonZ ph sc (betaAbsTotal b) dz_to_bottom)], g')
-        | z_scat > (height b)   = ([IRPhoton FaceTop    (travelPhotonZ ph sc (betaAbsTotal b) dz_to_top   )], g')
-        | otherwise             = processPhoton b scPh g'
+        | z_scat < 0        = ([IRPhoton FaceBottom (travelPhotonZ ph sc (betaAbsTotal b) dz_to_bottom)], g')
+        | z_scat > height b = ([IRPhoton FaceTop    (travelPhotonZ ph sc (betaAbsTotal b) dz_to_top   )], g')
+        | otherwise         = processPhoton b scPh g'
         where
             (rChoose:g')          = g
-            Just (_,sc)           = if (betaScatTotal b) == 0
+            Just (_,sc)           = if betaScatTotal b == 0
                                     then Just (1, head $ scatterers b)
                                     else find ((>= rChoose) . fst) $ zip (betaScatRelCum b) (scatterers b)
             Cartesian _ _ z_start = pos ph
             pos_scat              = posScat ph sc
             Cartesian _ _ z_scat  = pos_scat
-            dz_to_bottom          = 0 -          z_start
-            dz_to_top             = (height b) - z_start
+            dz_to_bottom          = 0        - z_start
+            dz_to_top             = height b - z_start
             (scPh, g'')           = scatteredPhoton ph sc (betaAbsTotal b) g'
 
 containerBox1D b1 b2 = Box Box1D $ ContainerBox1D b1 b2
 physicsBox1D h b s = Box Box1D $ PhysicsBox1D h [Scatterer 0.0 b s]
 
-accIR (t,b) (IRPhoton FaceTop    ph) = (t+(photonWeight ph),b)
-accIR (t,b) (IRPhoton FaceBottom ph) = (t,b+(photonWeight ph))
+accIR (t,b) (IRPhoton FaceTop    ph) = (t+photonWeight ph,b)
+accIR (t,b) (IRPhoton FaceBottom ph) = (t,b+photonWeight ph)
 
 summarize1D :: [InteractionResult (Face Box1D)] -> (Number, Number)
 summarize1D = foldl accIR (0,0)
 
 
-rayleighAtmos2BoxList :: [(Double,Double,Double)] -> [(Box Box1D)]
+rayleighAtmos2BoxList :: [(Double,Double,Double)] -> [Box Box1D]
 rayleighAtmos2BoxList [a]       = []
-rayleighAtmos2BoxList (a:b:res) = (Box Box1D (PhysicsBox1D (zhigh-zlow) [Scatterer beta_abs beta_sca (RandomDistribution Rayleigh)])):rayleighAtmos2BoxList (b:res)
+rayleighAtmos2BoxList (a:b:res) = Box Box1D (PhysicsBox1D (zhigh-zlow) [Scatterer beta_abs beta_sca (RandomDistribution Rayleigh)]):rayleighAtmos2BoxList (b:res)
     where
         (zlow, beta_sca, beta_abs) = a
         (zhigh,       _,        _) = b
 
-rayleighAtmos2Box' :: [(Box Box1D)] -> Maybe (Box Box1D)
+rayleighAtmos2Box' :: [Box Box1D] -> Maybe (Box Box1D)
 rayleighAtmos2Box' [] = Nothing
 rayleighAtmos2Box' l  = Just $ foldl1 addBox l
 

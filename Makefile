@@ -21,4 +21,7 @@ clean:
 test:
 	runhaskell -isrc -itest test/Spec.hs
 
-.PHONY: all clean test
+hlint:
+	hlint -h hlint/ignore-hints.hs src/
+
+.PHONY: all clean test hlint

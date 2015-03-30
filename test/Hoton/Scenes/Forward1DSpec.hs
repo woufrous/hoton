@@ -39,8 +39,8 @@ spec = do
             let (res, _) = processPhoton physics (initializePhotonWithTau 2 start dir) [0..]
             let [IRPhoton f ph] = res
             f  `shouldBe` FaceBottom
-            tau_r ph `shouldBe` 1
-            pos ph   `shouldBe` (Cartesian 0 0 0)
+            tauR ph `shouldBe` 1
+            pos ph  `shouldBe` (Cartesian 0 0 0)
         it "returns a top photon when travelling from bottom with big tau" $ do
             let physics  = physicsBox1D 1 1 $ RandomDistribution (HenyeyGreenstein 0.85)
             let start    = Cartesian 0 0 0
@@ -48,8 +48,8 @@ spec = do
             let (res, _) = processPhoton physics (initializePhotonWithTau 2 start dir) [0..]
             let [IRPhoton f ph] = res
             f  `shouldBe` FaceTop
-            tau_r ph `shouldBe` (2-(sqrt 2))
-            pos ph   `shouldBe` (Cartesian 0 1 1)
+            tauR ph `shouldBe` (2-(sqrt 2))
+            pos ph  `shouldBe` (Cartesian 0 1 1)
     describe "Hoton.Scenes.Forward1D.ContainerBox1D.processPhoton" $ do
         it "returns a bottom photon when travelling from top with big tau" $ do
             let physics  = physicsBox1D 1 1 $ RandomDistribution (HenyeyGreenstein 0.85)
@@ -59,8 +59,8 @@ spec = do
             let (res, _) = processPhoton cont (initializePhotonWithTau 3 start dir) [0..]
             let [IRPhoton f ph] = res
             f  `shouldBe` FaceBottom
-            tau_r ph `shouldBe` 1
-            pos ph   `shouldBe` (Cartesian 0 0 0)
+            tauR ph `shouldBe` 1
+            pos ph  `shouldBe` (Cartesian 0 0 0)
         it "returns a top photon when travelling from bottom with big tau" $ do
             let physics1 = physicsBox1D 1 1 $ RandomDistribution (HenyeyGreenstein 0.85)
             let physics2 = physicsBox1D 2 2 $ RandomDistribution (HenyeyGreenstein 0.85)
@@ -70,8 +70,8 @@ spec = do
             let (res, _) = processPhoton cont (initializePhotonWithTau 10 start dir) [0..]
             let [IRPhoton f ph] = res
             f  `shouldBe` FaceTop
-            tau_r ph `shouldBe` (10-(5*(sqrt 2)))
-            pos ph   `shouldBe` (Cartesian 0 3 3)
+            tauR ph `shouldBe` (10-(5*(sqrt 2)))
+            pos ph  `shouldBe` (Cartesian 0 3 3)
     describe "single layer statistical examples" $ do
         let pos0 = Cartesian 0.0 0.0 1.0
         let nphotons = 100

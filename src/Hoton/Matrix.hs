@@ -28,16 +28,16 @@ mvmul :: Matrix3D -> Cartesian -> Cartesian
 mvmul (Matrix3D x1 x2 x3) c = Cartesian (c `scalar` x1) (c `scalar` x2) (c `scalar` x3)
 
 mrotx :: Number -> Matrix3D
-mrotx alpha = mgen ((1,0,0), (0,(cos alpha),(-sin alpha)), (0,(sin alpha),(cos alpha)))
+mrotx alpha = mgen ((1,0,0), (0,cos alpha,-sin alpha), (0,sin alpha,cos alpha))
 mroty :: Number -> Matrix3D
-mroty alpha = mgen (((cos alpha),0,(sin alpha)), (0,1,0), ((-sin alpha),0,(cos alpha)))
+mroty alpha = mgen ((cos alpha,0,sin alpha), (0,1,0), (-sin alpha,0,cos alpha))
 mrotz :: Number -> Matrix3D
-mrotz alpha = mgen (((cos alpha),(-sin alpha),0), ((sin alpha),(cos alpha),0), (0,0,1))
+mrotz alpha = mgen ((cos alpha,-sin alpha,0), (sin alpha,cos alpha,0), (0,0,1))
 mrotax' :: Number -> Number -> Cartesian -> Matrix3D
 mrotax' ca sa (Cartesian n1 n2 n3) = mgen (
-        ( (n1*n1*(1-ca)+   ca), (n1*n2*(1-ca)-n3*sa), (n1*n3*(1-ca)+n2*sa) ),
-        ( (n2*n1*(1-ca)+n3*sa), (n2*n2*(1-ca)+   ca), (n2*n3*(1-ca)-n1*sa) ),
-        ( (n3*n1*(1-ca)-n2*sa), (n3*n2*(1-ca)+n1*sa), (n3*n3*(1-ca)+   ca) ))
+        ( n1*n1*(1-ca)+   ca , n1*n2*(1-ca)-n3*sa , n1*n3*(1-ca)+n2*sa ),
+        ( n2*n1*(1-ca)+n3*sa , n2*n2*(1-ca)+   ca , n2*n3*(1-ca)-n1*sa ),
+        ( n3*n1*(1-ca)-n2*sa , n3*n2*(1-ca)+n1*sa , n3*n3*(1-ca)+   ca ))
 
 mrotaxmu :: Number -> Cartesian -> Matrix3D
 mrotaxmu mu = mrotax' mu (sqrt (1 - (mu*mu)))
